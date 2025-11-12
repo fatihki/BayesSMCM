@@ -1,0 +1,77 @@
+#' Rhat.mcmc
+#'
+#' @title Gelman and Rubin's convergence diagnostic for MCMC chains of SMCM and SMCFM.
+#' 
+#' @description
+#' The ‘potential scale reduction factor’ is calculated by using coda::\link[coda]{gelman.diag}.
+#' 
+#' @import coda
+#' 
+#' @name Rhat.mcmc
+#' @param fit mcmc chains as a list variable MCMC.SMCM/MCMC.SMCFM output
+#' @param warmup the number of warmup iterations included in fit.mcmc.chains
+#' @param thin the number of thining
+#' 
+#' @return Rhat values for parameters b, beta, and lambda
+#' @examples
+#' \dontrun{
+#' # Assuming fit is already defined 
+#' Rhat_values <- Rhat.mcmc(fit, warmup, thin)
+#' print(Rhat_values)
+#' } 
+#' 
+#' @export
+Rhat.mcmc                   <- function(fit, warmup, thin){
+
+  # for b  
+  mcmc_chains_b             <- lapply( fit, function(x) { x$b.p[-c(1), ] } )    # removing the initial values!
+  processed_chains_b        <- lapply(mcmc_chains_b, function(chain) {
+    # Apply burn-in and thinning
+    thinned_chain           <- chain[(warmup + 1):nrow(chain), ][seq(1, nrow(chain) - warmup, by = thin), ]
+    # Create an mcmc object for each thinned chain
+    coda::mcmc(thinned_chain)
+  })
+  
+  mcmc_list_b               <- coda::mcmc.list(processed_chains_b)
+  Rhat_b                    <- matrix( coda::gelman.diag(mcmc_list_b, autoburnin = F)$psrf[,1] , nrow=1 )
+  colnames(Rhat_b )         <- paste0("b[", 1:length(Rhat_b), "]" ) 
+  
+  # for beta
+  mcmc_chains_beta           <- lapply( fit, function(x) { x$beta.p[-c(1), ] } ) # removing the initial values!
+  if( ncol(fit[[1]]$beta.p) == 1 ){
+    processed_chains_beta    <- lapply(mcmc_chains_beta, function(chain) {
+      thinned_chain          <- chain[(warmup + 1):length(chain) ][seq(1, length(chain) - warmup, by = thin) ]
+      coda::mcmc(thinned_chain)
+    })
+  }else{
+    processed_chains_beta      <- lapply(mcmc_chains_beta, function(chain) {
+      thinned_chain            <- chain[(warmup + 1):nrow(chain), ][seq(1, nrow(chain) - warmup, by = thin), ]
+      coda::mcmc(thinned_chain)
+    })
+  }
+  
+  mcmc_list_beta             <- coda::mcmc.list(processed_chains_beta)
+  Rhat_beta                  <- matrix( coda::gelman.diag(mcmc_list_beta, autoburnin = F)$psrf[,1] , nrow=1 )
+  colnames(Rhat_beta )       <- paste0("beta[", 1:length(Rhat_beta), "]" ) 
+  
+  # for lambda
+  if( ncol(fit[[1]]$lambda.p) == 1 ){
+    mcmc_chains_lambda       <- lapply( fit, function(x) { x$lambda.p[-c(1), ] } ) # removing the initial values!
+    processed_chains_lambda  <- lapply(mcmc_chains_lambda, function(chain) {
+      thinned_chain          <- chain[(warmup + 1):length(chain) ][seq(1, length(chain) - warmup, by = thin) ]
+      coda::mcmc(thinned_chain)
+    })
+  }else{
+    mcmc_chains_lambda       <- lapply( fit, function(x) { x$lambda.p[-c(1), ] } ) # removing the initial values!
+    processed_chains_lambda  <- lapply(mcmc_chains_lambda, function(chain) {
+      thinned_chain          <- chain[(warmup + 1):nrow(chain), ][seq(1, nrow(chain) - warmup, by = thin), ]
+      coda::mcmc(thinned_chain)
+    })
+  }
+  
+  mcmc_list_lambda           <- coda::mcmc.list(processed_chains_lambda)
+  Rhat_lambda                <- matrix( coda::gelman.diag(mcmc_list_lambda, autoburnin = F)$psrf[,1] , nrow=1 )
+  colnames(Rhat_lambda )     <- paste0("lambda[", 1:length(Rhat_lambda), "]" ) 
+  
+  return( cbind(Rhat_b, Rhat_beta, Rhat_lambda) )
+}

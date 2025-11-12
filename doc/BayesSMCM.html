@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>BayesSMCM Tutorial</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">BayesSMCM Tutorial</h1>
+
+
+
+<div id="introduction" class="section level2">
+<h2>Introduction</h2>
+<p>This vignette demonstrates how to use the <code>BayesSMCM</code>
+package to simulate data and fit a hierarchical semiparametric mixture
+cure frailty model.</p>
+</div>
+<div id="installation" class="section level2">
+<h2>Installation</h2>
+<p>Install the latest released version from <a href="https://CRAN.R-project.org/package=GPTCM">CRAN</a></p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(BayesSMCM)</span></code></pre></div>
+</div>
+<div id="data-example" class="section level2">
+<h2>Data example</h2>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a><span class="co"># simulate data</span></span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">300</span></span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a>b.true <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.1</span>)</span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>beta.true <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">1</span>, <span class="fl">0.2</span> )</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>baseline.hazard.rates <span class="ot">&lt;-</span> <span class="dv">1</span></span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>intervals <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="dv">0</span>, <span class="dv">16</span>)</span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>prob.cov.X <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>)</span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>prob.cov.Z <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="fl">0.5</span>)</span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>dat1 <span class="ot">&lt;-</span> <span class="fu">simSMCM</span>(n, b.true, beta.true, baseline.hazard.rates, intervals, <span class="at">seed =</span> <span class="dv">2026</span>, <span class="at">cens.start =</span> <span class="dv">30</span><span class="sc">/</span><span class="dv">365</span>, <span class="at">cens.end =</span> <span class="dv">32</span>,  prob.cov.X, prob.cov.Z, <span class="at">same.cov =</span> <span class="cn">TRUE</span> )</span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a><span class="fu">str</span>(dat1)</span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a><span class="co">#&gt; List of 9</span></span>
+<span id="cb2-12"><a href="#cb2-12" tabindex="-1"></a><span class="co">#&gt;  $ b.true               : num [1:3] 0.4 0.5 0.1</span></span>
+<span id="cb2-13"><a href="#cb2-13" tabindex="-1"></a><span class="co">#&gt;  $ beta.true            : num [1:2] 1 0.2</span></span>
+<span id="cb2-14"><a href="#cb2-14" tabindex="-1"></a><span class="co">#&gt;  $ baseline.hazard.rates: num 1</span></span>
+<span id="cb2-15"><a href="#cb2-15" tabindex="-1"></a><span class="co">#&gt;  $ X                    : num [1:300, 1:2] 0 1 0 1 1 0 1 0 1 1 ...</span></span>
+<span id="cb2-16"><a href="#cb2-16" tabindex="-1"></a><span class="co">#&gt;  $ Z                    : num [1:300, 1:3] 1 1 1 1 1 1 1 1 1 1 ...</span></span>
+<span id="cb2-17"><a href="#cb2-17" tabindex="-1"></a><span class="co">#&gt;  $ observed_time        : num [1:300] 0.644 0.197 0.465 0.386 0.428 ...</span></span>
+<span id="cb2-18"><a href="#cb2-18" tabindex="-1"></a><span class="co">#&gt;  $ delta                : num [1:300] 1 1 1 1 1 1 1 1 0 1 ...</span></span>
+<span id="cb2-19"><a href="#cb2-19" tabindex="-1"></a><span class="co">#&gt;  $ censor.rate          : num 0.33</span></span>
+<span id="cb2-20"><a href="#cb2-20" tabindex="-1"></a><span class="co">#&gt;  $ intervals            : num [1:2] 0 16</span></span></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># Bayesian settings </span></span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>nchains <span class="ot">=</span> <span class="dv">2</span>; nIter   <span class="ot">=</span> <span class="dv">3000</span>;   warmup <span class="ot">=</span> <span class="dv">1000</span>; thin <span class="ot">=</span> <span class="dv">10</span></span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a><span class="co"># prior for SMCMs</span></span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>priorPar.smcm <span class="ot">=</span> <span class="fu">list</span>( <span class="at">r1 =</span> <span class="dv">1</span>, <span class="at">delta1 =</span> <span class="fl">0.0001</span>, <span class="at">r2 =</span> <span class="dv">1</span>, <span class="at">delta2 =</span> <span class="fl">0.0001</span>, <span class="at">a =</span> <span class="fl">0.1</span>, <span class="at">b =</span> <span class="fl">0.1</span> )</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a><span class="co"># prior settings for SMCFMs</span></span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>priorPar.smcfm <span class="ot">=</span> <span class="fu">list</span>( <span class="at">r1 =</span> <span class="dv">1</span>, <span class="at">delta1 =</span> <span class="fl">0.0001</span>, <span class="at">r2 =</span> <span class="dv">1</span>, <span class="at">delta2 =</span> <span class="fl">0.0001</span>, <span class="at">a =</span> <span class="fl">0.1</span>, <span class="at">b =</span> <span class="fl">0.1</span>, <span class="at">c =</span> <span class="fl">0.1</span>, <span class="at">d =</span> <span class="fl">0.1</span> )</span></code></pre></div>
+</div>
+<div id="models-based-on-mcmc-algorithm" class="section level2">
+<h2>Models based on MCMC algorithm</h2>
+<div id="fitting-smcm.mcmc-model" class="section level3">
+<h3>Fitting SMCM.MCMC model</h3>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>out.smcm.mcmc <span class="ot">=</span> <span class="fu">fit.MCMC.SMCM</span> ( <span class="at">data =</span> dat1, <span class="at">hyperpar =</span> priorPar.smcm, nchains, nIter, warmup, thin, <span class="at">mcmc.parallel =</span> <span class="st">&quot;parLapply&quot;</span>, <span class="at">standardize =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="dv">0</span>, <span class="at">save_loglik =</span> <span class="dv">1</span>, <span class="at">seed =</span> <span class="dv">2025</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="fu">print_smcm</span>( out.smcm.mcmc, <span class="at">stan.model =</span> <span class="cn">FALSE</span>, <span class="at">frailty =</span> <span class="cn">FALSE</span> )</span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a><span class="co">#&gt; - SMCM.MCMC Model Results (J = 1 ) </span></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co">#&gt;           Estimate(Mean)     SD HPD lower HPD upper   Rhat</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="co">#&gt; b[0]              0.4486 0.1735    0.1215    0.7714 0.9977</span></span>
+<span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a><span class="co">#&gt; b[1]              0.7386 0.2742    0.2176    1.2675 1.0018</span></span>
+<span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a><span class="co">#&gt; b[2]              0.0429 0.1340   -0.2063    0.3161 1.0019</span></span>
+<span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a><span class="co">#&gt; beta[1]           0.8307 0.1647    0.5037    1.1488 1.0088</span></span>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="co">#&gt; beta[2]           0.1464 0.0775   -0.0021    0.3026 1.0020</span></span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a><span class="co">#&gt; lambda[1]         1.1707 0.1370    0.8984    1.4501 1.0239</span></span>
+<span id="cb5-11"><a href="#cb5-11" tabindex="-1"></a><span class="co">#&gt; pi(z)             0.6887 0.0274    0.6376    0.7414 0.9998</span></span></code></pre></div>
+</div>
+<div id="fitting-smcfm.mcmc-model" class="section level3">
+<h3>Fitting SMCFM.MCMC model</h3>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>out.smcfm.mcmc <span class="ot">=</span> <span class="fu">fit.MCMC.SMCFM</span> ( <span class="at">data =</span> dat1, <span class="at">hyperpar =</span> priorPar.smcfm, nchains, nIter, warmup, thin, <span class="at">mcmc.parallel =</span> <span class="st">&quot;parLapply&quot;</span>, <span class="at">standardize =</span> <span class="cn">TRUE</span>, <span class="at">probs =</span> <span class="dv">0</span>, <span class="at">save_loglik =</span> <span class="dv">1</span>, <span class="at">seed =</span> <span class="dv">2025</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="fu">print_smcm</span>( out.smcfm.mcmc, <span class="at">stan.model =</span> <span class="cn">FALSE</span>, <span class="at">frailty =</span> <span class="cn">TRUE</span> )</span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a><span class="co">#&gt; - SMCFM.MCMC Model Results (J = 1 ) </span></span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a><span class="co">#&gt;           Estimate(Mean)      SD HPD lower HPD upper   Rhat</span></span>
+<span id="cb7-5"><a href="#cb7-5" tabindex="-1"></a><span class="co">#&gt; b[0]              0.4319  0.1787    0.0762    0.7499 1.0016</span></span>
+<span id="cb7-6"><a href="#cb7-6" tabindex="-1"></a><span class="co">#&gt; b[1]              0.7838  0.2713    0.2765    1.2796 1.0003</span></span>
+<span id="cb7-7"><a href="#cb7-7" tabindex="-1"></a><span class="co">#&gt; b[2]              0.0404  0.1281   -0.2018    0.2951 1.0110</span></span>
+<span id="cb7-8"><a href="#cb7-8" tabindex="-1"></a><span class="co">#&gt; beta[1]           0.8038  0.1648    0.4804    1.1409 0.9995</span></span>
+<span id="cb7-9"><a href="#cb7-9" tabindex="-1"></a><span class="co">#&gt; beta[2]           0.1382  0.0829   -0.0195    0.2927 0.9979</span></span>
+<span id="cb7-10"><a href="#cb7-10" tabindex="-1"></a><span class="co">#&gt; lambda[1]         1.2083  0.1459    0.9560    1.5257 1.0119</span></span>
+<span id="cb7-11"><a href="#cb7-11" tabindex="-1"></a><span class="co">#&gt; theta            75.0902 28.3637   27.3483  125.0593     NA</span></span>
+<span id="cb7-12"><a href="#cb7-12" tabindex="-1"></a><span class="co">#&gt; pi(z)             0.6892  0.0293    0.6277    0.7414 1.0056</span></span></code></pre></div>
+</div>
+</div>
+<div id="models-based-on-rstan" class="section level2">
+<h2>Models based on RStan</h2>
+<div id="fitting-smcm.rstan-model" class="section level3">
+<h3>Fitting SMCM.Rstan model</h3>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>priorPar.smcm.rstan <span class="ot">=</span> <span class="fu">list</span>( <span class="at">sigma_beta =</span> <span class="dv">1000</span>, <span class="at">sigma_b =</span> <span class="dv">1000</span>, <span class="at">a =</span> <span class="fl">0.1</span>, <span class="at">b =</span> <span class="fl">0.1</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="fu">print_smcm</span>( out.smcm.rstan, <span class="at">stan.model =</span> <span class="cn">TRUE</span>, <span class="at">frailty =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a><span class="co">#&gt; - SMCM.RStan Model Results (J = 1 ) </span></span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a><span class="co">#&gt;           Estimate(Mean)     SD HPD lower HPD upper   Rhat</span></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="co">#&gt; b[0]              0.4363 0.1776    0.0984    0.7645 1.0001</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a><span class="co">#&gt; b[1]              0.8557 0.2857    0.2743    1.3728 1.0054</span></span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a><span class="co">#&gt; b[2]              0.0413 0.1433   -0.2198    0.3411 0.9963</span></span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a><span class="co">#&gt; beta[1]           0.8485 0.1399    0.5806    1.1117 0.9978</span></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co">#&gt; beta[2]           0.1550 0.0746    0.0098    0.3069 0.9967</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a><span class="co">#&gt; lambda[1]         1.1653 0.1286    0.8854    1.3925 0.9973</span></span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a><span class="co">#&gt; pi(z)             0.6963 0.0270    0.6455    0.7479 0.9992</span></span></code></pre></div>
+</div>
+<div id="fitting-smcfm.rstan-model" class="section level3">
+<h3>Fitting SMCFM.Rstan model</h3>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>priorPar.smcfm.rstan <span class="ot">=</span> <span class="fu">list</span>( <span class="at">sigma_beta =</span> <span class="dv">1000</span>, <span class="at">sigma_b =</span> <span class="dv">1000</span>,<span class="at">a =</span> <span class="fl">0.1</span>, <span class="at">b =</span> <span class="fl">0.1</span>,  <span class="at">c =</span> <span class="fl">0.1</span>, <span class="at">d =</span> <span class="fl">0.1</span> )</span></code></pre></div>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="fu">print_smcm</span>( out.smcfm.rstan, <span class="at">stan.model =</span> <span class="cn">TRUE</span>, <span class="at">frailty =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="co">#&gt; - SMCFM.RStan Model Results (J = 1 ) </span></span>
+<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co">#&gt;           Estimate(Mean)     SD HPD lower HPD upper   Rhat</span></span>
+<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a><span class="co">#&gt; b[0]              0.4446 0.1830    0.0684    0.8015 1.0062</span></span>
+<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a><span class="co">#&gt; b[1]              0.8477 0.2718    0.3381    1.4333 1.0031</span></span>
+<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="co">#&gt; b[2]              0.0602 0.1518   -0.2153    0.3585 1.0052</span></span>
+<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="co">#&gt; beta[1]           0.8099 0.1539    0.5103    1.0728 0.9976</span></span>
+<span id="cb11-9"><a href="#cb11-9" tabindex="-1"></a><span class="co">#&gt; beta[2]           0.1601 0.0870    0.0155    0.3366 0.9976</span></span>
+<span id="cb11-10"><a href="#cb11-10" tabindex="-1"></a><span class="co">#&gt; lambda[1]         1.2418 0.1489    0.9724    1.5441 0.9997</span></span>
+<span id="cb11-11"><a href="#cb11-11" tabindex="-1"></a><span class="co">#&gt; theta            17.7076 9.8631    2.9945   35.3321 0.9980</span></span>
+<span id="cb11-12"><a href="#cb11-12" tabindex="-1"></a><span class="co">#&gt; pi(z)             0.6975 0.0297    0.6332    0.7472 1.0025</span></span></code></pre></div>
+</div>
+<div id="fitting-hsmcm.rstan-model" class="section level3">
+<h3>Fitting HSMCM.Rstan model</h3>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="fu">print_smcm</span>( out.hsmcm.rstan, <span class="at">stan.model =</span> <span class="cn">TRUE</span>, <span class="at">frailty =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a><span class="co">#&gt; - HSMCM.RStan Model Results (J = 1 ) </span></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co">#&gt;           Estimate(Mean)     SD HPD lower HPD upper   Rhat</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a><span class="co">#&gt; b[0]              0.4505 0.1703    0.0944    0.7492 1.0222</span></span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a><span class="co">#&gt; b[1]              0.7316 0.2995    0.1993    1.3276 1.0231</span></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="co">#&gt; b[2]              0.0187 0.1205   -0.1991    0.2679 1.0358</span></span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="co">#&gt; beta[1]           0.7800 0.1400    0.4722    1.0327 1.0074</span></span>
+<span id="cb12-9"><a href="#cb12-9" tabindex="-1"></a><span class="co">#&gt; beta[2]           0.1502 0.0781    0.0042    0.2954 1.0160</span></span>
+<span id="cb12-10"><a href="#cb12-10" tabindex="-1"></a><span class="co">#&gt; lambda[1]         1.2129 0.1284    0.9999    1.4776 1.0151</span></span>
+<span id="cb12-11"><a href="#cb12-11" tabindex="-1"></a><span class="co">#&gt; pi(z)             0.6883 0.0254    0.6322    0.7299 0.9989</span></span></code></pre></div>
+</div>
+<div id="fitting-hsmcfm.rstan-model" class="section level3">
+<h3>Fitting HSMCFM.Rstan model</h3>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="fu">print_smcm</span>( out.hsmcfm.rstan, <span class="at">stan.model =</span> <span class="cn">TRUE</span>, <span class="at">frailty =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co">#&gt; </span></span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a><span class="co">#&gt; - HSMCFM.RStan Model Results (J = 1 ) </span></span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="co">#&gt;           Estimate(Mean)      SD HPD lower HPD upper   Rhat</span></span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a><span class="co">#&gt; b[0]              0.4512  0.1548    0.1227    0.7436 1.0056</span></span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a><span class="co">#&gt; b[1]              0.7397  0.2474    0.2355    1.1818 1.0158</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a><span class="co">#&gt; b[2]              0.0316  0.1290   -0.2285    0.2746 1.0035</span></span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="co">#&gt; beta[1]           0.7233  0.1614    0.4286    1.0473 1.0044</span></span>
+<span id="cb13-9"><a href="#cb13-9" tabindex="-1"></a><span class="co">#&gt; beta[2]           0.1382  0.0794   -0.0070    0.2901 1.0125</span></span>
+<span id="cb13-10"><a href="#cb13-10" tabindex="-1"></a><span class="co">#&gt; lambda[1]         1.3215  0.1632    1.0401    1.6407 1.0043</span></span>
+<span id="cb13-11"><a href="#cb13-11" tabindex="-1"></a><span class="co">#&gt; theta            18.7276 10.4380    4.1978   38.9085 0.9965</span></span>
+<span id="cb13-12"><a href="#cb13-12" tabindex="-1"></a><span class="co">#&gt; pi(z)             0.6892  0.0267    0.6361    0.7382 0.9985</span></span></code></pre></div>
+</div>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

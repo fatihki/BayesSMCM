@@ -1,0 +1,127 @@
+---
+title: "BayesSMCM Tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BayesSMCM Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+## Introduction
+
+This vignette demonstrates how to use the `BayesSMCM` package to simulate data and fit a hierarchical semiparametric mixture cure frailty model.
+
+## Installation
+
+Install the latest released version from [CRAN](https://CRAN.R-project.org/package=GPTCM)
+
+```{r}
+library(BayesSMCM)
+```
+
+## Data example
+
+```{r}
+# simulate data
+n <- 300
+b.true <- c( 0.4, 0.5, 0.1)
+beta.true <- c(1, 0.2 )
+baseline.hazard.rates <- 1
+intervals <- c(0, 16)
+prob.cov.X <- c(0.5)
+prob.cov.Z <- c(0.5)
+dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
+str(dat1)
+```
+
+```{r}
+# Bayesian settings 
+nchains = 2; nIter   = 3000;   warmup = 1000; thin = 10
+
+# prior for SMCMs
+priorPar.smcm = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1 )
+
+# prior settings for SMCFMs
+priorPar.smcfm = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1, c = 0.1, d = 0.1 )
+```
+
+## Models based on MCMC algorithm
+
+### Fitting SMCM.MCMC model
+
+```{r}
+out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar.smcm, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply", standardize = TRUE, probs = 0, save_loglik = 1, seed = 2025 )
+```
+
+```{r}
+print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
+```
+
+### Fitting SMCFM.MCMC model
+
+```{r}
+out.smcfm.mcmc = fit.MCMC.SMCFM ( data = dat1, hyperpar = priorPar.smcfm, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply", standardize = TRUE, probs = 0, save_loglik = 1, seed = 2025 )
+```
+
+```{r}
+print_smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
+```
+
+## Models based on RStan
+
+### Fitting SMCM.Rstan model
+
+```{r}
+priorPar.smcm.rstan = list( sigma_beta = 1000, sigma_b = 1000, a = 0.1, b = 0.1)
+```
+
+```{r include=FALSE}
+out.smcm.rstan = fit.SMCM.RStan(data=dat1, hyperpar =  priorPar.smcm.rstan, nchains, nIter, warmup, thin, standardize = TRUE, probs = 0, save_loglik = 1, seed = 2025  )
+```
+
+```{r}
+print_smcm( out.smcm.rstan, stan.model = TRUE, frailty = FALSE)
+```
+
+### Fitting SMCFM.Rstan model
+
+```{r }
+priorPar.smcfm.rstan = list( sigma_beta = 1000, sigma_b = 1000,a = 0.1, b = 0.1,  c = 0.1, d = 0.1 )
+```
+
+```{r include=FALSE}
+out.smcfm.rstan =  fit.SMCFM.RStan(data=dat1, hyperpar =  priorPar.smcfm.rstan, nchains, nIter, warmup, thin, standardize = TRUE, probs = 0, save_loglik = 1, seed = 2025  )
+```
+
+```{r}
+print_smcm( out.smcfm.rstan, stan.model = TRUE, frailty = TRUE)
+```
+
+### Fitting HSMCM.Rstan model
+
+```{r include=FALSE}
+out.hsmcm.rstan = fit.HSMCM.RStan(data=dat1, hyperpar =  priorPar.smcm , nchains, nIter, warmup, thin, standardize = TRUE, probs = 0, save_loglik = 1, seed = 2025  )
+```
+
+```{r}
+print_smcm( out.hsmcm.rstan, stan.model = TRUE, frailty = FALSE)
+```
+
+### Fitting HSMCFM.Rstan model
+
+```{r include=FALSE}
+out.hsmcfm.rstan = fit.HSMCFM.RStan(data=dat1, hyperpar = priorPar.smcfm, nchains, nIter, warmup, thin, standardize = TRUE, probs = 0, save_loglik = 1, seed = 2025  )
+```
+
+```{r}
+print_smcm( out.hsmcfm.rstan, stan.model = TRUE, frailty = TRUE)
+```
+
+# References

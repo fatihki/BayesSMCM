@@ -1,0 +1,179 @@
+#' Internal helper functions for arranging Bayesian results
+#'
+#' @importFrom coda as.mcmc HPDinterval
+#' 
+#' @noRd
+mcmc.burn.thin        <- function(fit, warmup, thin, par ){
+  # par : b, beta, lambda, theta
+  if(par == "b"){      mcmc_chains       <- lapply( fit, function(x) { x$b.p[-c(1), ] } )   }           # removing the initial values!
+  if(par == "beta"){   mcmc_chains       <- lapply( fit, function(x) { x$beta.p[-c(1), ] } )  }
+  if(par == "lambda"){ mcmc_chains       <- lapply( fit, function(x) { x$lambda.p[-c(1), ] } )  }
+  if(par == "theta"){  mcmc_chains       <- lapply( fit, function(x) { x$theta.p[-c(1), ] } )  }
+  if(par == "loglik"){  mcmc_chains      <- lapply( fit, function(x) { x$loglik.matrix[-c(1), ] } )  }
+  
+  if( ncol(as.matrix( mcmc_chains[[1]]) ) == "1" ){
+    processed_chains  <- lapply(mcmc_chains, function(chain) {
+      thinned_chain   <- chain[(warmup + 1):length(chain) ][seq(1, length(chain) - warmup, by = thin) ] } )
+  }else{
+    processed_chains  <- lapply(mcmc_chains, function(chain) {
+      thinned_chain   <- chain[(warmup + 1):nrow(chain), ][seq(1, nrow(chain) - warmup, by = thin), ]    } )  
+  }
+  return(processed_chains)
+}
+#' calculation of the acceptance rate of our mcmc results 
+#' @noRd
+acceptance.matrix.mcmc.smcm       <- function(out, pars, length.true.parameter, nchains){
+  # out: list variable
+  if (pars == "b"){
+    acceptance.all.chain        <- matrix ( unlist(  lapply( out, function(y) {
+      lapply( y$fit, function(x) x$mcmcOutcome$accept.b  )
+    }) ), ncol = length.true.parameter , byrow = T)
+    colnames(acceptance.all.chain)  <-  paste0(pars,"[", 0:(length.true.parameter-1), "]" ) 
+  }else{
+    if( pars == "beta"){
+      acceptance.all.chain      <- matrix ( unlist(  lapply( out, function(y) {
+        lapply( y$fit, function(x) x$mcmcOutcome$accept.beta  )
+      }) ), ncol = length.true.parameter , byrow = T) }
+    if( pars == "lambda"){
+      acceptance.all.chain      <- matrix ( unlist(  lapply( out, function(y) {
+        lapply( y$fit, function(x) x$mcmcOutcome$accept.lambda  )
+      }) ), ncol = length.true.parameter , byrow = T) }
+    if( pars == "theta"){
+      acceptance.all.chain      <- matrix ( unlist(  lapply( out, function(y) {
+        lapply( y$fit, function(x) x$mcmcOutcome$accept.theta  )
+      }) ), ncol = length.true.parameter , byrow = T) }
+    
+    colnames(acceptance.all.chain) <-  paste0(pars,"[", 1:(length.true.parameter), "]" ) 
+  }
+  rownames(acceptance.all.chain) <- rep( paste0("Chain", 1:nchains), length(out) ) 
+  return(acceptance.all.chain)
+}
+#' @noRd
+mcmc.dic.lpml <- function( survObj, priorPara, loglik.matrix.chains, b.hat.mcmc, beta.hat.mcmc, lambda.hat.mcmc, stan.model = FALSE, frailty = FALSE, ... ){
+  if(frailty == TRUE){
+    args            <- list(...)
+    # Extract 'theta.hat.mcmc' if provided, else use a default value
+    theta.hat.mcmc  <- if ("theta.hat.mcmc" %in% names(args)) args$theta.hat.mcmc else NA
+  }
+  # stan.model gives combined loglik.matrix.chains wrt all the chains, 
+  # but our MCMC model gives each chain in the list variable, so we need to combine them.
+  if(stan.model == FALSE){
+    nchains         <- length(loglik.matrix.chains)
+    loglik.matrix   <- c()
+    for (i in 1:nchains) {
+      loglik.matrix <- rbind( loglik.matrix, loglik.matrix.chains[[i]])
+    }
+  }else{
+    loglik.matrix   <- loglik.matrix.chains
+  }
+  # Convert log-likelihood to likelihood
+  lik.matrix        <- exp(loglik.matrix)
+  # Compute CPO using harmonic mean formula
+  cpo               <- 1 / colMeans(1 / lik.matrix)
+  # Compute LPML
+  lpml              <- sum(log(cpo))
+  # loo from loo package
+  loo_result        <- loo::loo(loglik.matrix)                   
+  
+  LL                <- mean( rowSums( loglik.matrix ) )                         # Average log-Likelihood based on MCMC samples
+  k                 <- length(b.hat.mcmc) + length(beta.hat.mcmc) + length(lambda.hat.mcmc) +  ifelse( frailty == FALSE, 0, 1) # parameters size in the model 
+  AIC               <- 2*k - 2*LL
+  BIC               <- k*log(length(survObj$t)) - 2*LL
+  
+  # deviance information criterion (DIC) 
+  Dev_average       <- mean( rowSums(-2*loglik.matrix ) )                       # Average Deviance based on MCMC samples, loglik.matrix represents for each observation, first we need to sum for all the observations
+  if(frailty == FALSE){ 
+    Dev_at_pm       <- -2 * sum ( logLik_SMCM(survObj, priorPara, b.coef = b.hat.mcmc, beta.coef = beta.hat.mcmc, lambda.coef = lambda.hat.mcmc ) ) # Deviance at the posterior means of the parameters= -2*loglik(pm),  logLik.SMCM for each observation
+  }else{
+    Dev_at_pm       <- -2 * sum ( logLik_SMCFM(survObj, priorPara, b.coef = b.hat.mcmc, beta.coef = beta.hat.mcmc, lambda.coef = lambda.hat.mcmc, theta.coef = theta.hat.mcmc ) ) # Deviance at the posterior means of the parameters= -2*loglik(pm) 
+  }
+  p_D               <- Dev_average - Dev_at_pm
+  DIC               <- Dev_at_pm  + 2 * p_D
+  
+  return( list( loo_result = loo_result, lpml = lpml, LL = LL, k = k, AIC = AIC, BIC = BIC, p_D = p_D, DIC = DIC, Dev_average = Dev_average , Dev_at_pm = Dev_at_pm ) )
+}
+#' Functions for arranging results based on RStan results
+#' @noRd
+HPD.credible.interval.stan.fit <- function(fit.rstan, pars ){
+  # fit.rstan: stan fit results
+  # pars : parameters can be "beta.p" or "b.p" or "lambda.p" or "theta.p"
+  # ...  : if you have true values of the parameters, give it as  "pars.true", then cp value return as 0 and 1 for each paramter wrt hpd interval includes true value or not
+  
+  if (pars == "b.p") {
+    combined.chains   <- fit.rstan$b.chains
+  } else if (pars == "beta.p") {
+    combined.chains   <- fit.rstan$beta.chains
+  } else if (pars == "lambda.p") {
+    combined.chains   <- fit.rstan$lambda.chains
+  } else if (pars == "theta.p") {
+    combined.chains   <- matrix(fit.rstan$theta.chains, ncol=1)
+  }
+  n_col                    <- ncol(combined.chains)
+  hpd.interval             <- HPDinterval( as.mcmc(combined.chains), prob = 0.95 )
+  hpd.interval             <- as.data.frame(hpd.interval)  
+  if(pars == "b.p"){
+    rownames(hpd.interval) <- paste0(pars,"[", 0:(n_col-1),"]")
+  }else{
+    rownames(hpd.interval) <- paste0(pars,"[", 1:(n_col),"]")
+  }
+  return(hpd.interval)
+}
+#' @noRd
+check.stan.rhat <- function(fit, rhat_threshold = 1.1) {
+  summary_fit   <- summary(fit)$summary
+  rhat_values   <- summary_fit[, "Rhat"]
+  
+  if (any(rhat_values > rhat_threshold, na.rm = TRUE)) {
+    return(FALSE)
+  } else {
+    return(TRUE)
+  }
+}
+#' @noRd
+stan.fit.parametric.results   <- function(fit, Z, b.true, beta.true, frailty = FALSE){
+  b.hat            <- colMeans(extract(fit)$b)
+  beta.hat         <- colMeans(extract(fit)$beta)
+  lambda.hat       <- colMeans(extract(fit)$lambda)
+  pz.true          <- logit(Z, b.true)
+  pz.hat           <- logit(Z, b.hat )
+
+  if(frailty == TRUE){ theta.hat <- mean(extract(fit)$theta) 
+  results          <- c( b.hat = b.hat, beta.hat = beta.hat, lambda.hat = lambda.hat, theta.hat = theta.hat,
+                         pz.true = mean(pz.true), pz.hat=  mean(pz.hat), pz.hat.bias = mean( (pz.hat - pz.true) ), pz.hat.mse  = mean( (pz.hat - pz.true)^2 ) ,
+                         b.rmse = norm( b.hat - b.true, type = "2"), b.mae = sum( abs( b.hat - b.true) ),
+                         beta.rmse = norm( beta.hat - beta.true, type = "2") , beta.mae = sum( abs( beta.hat - beta.true ) ),
+                         elapsed.time = sum(get_elapsed_time(fit))/60  )
+  }else{
+    results        <- c( b.hat = b.hat, beta.hat = beta.hat, lambda.hat = lambda.hat,
+                         pz.true = mean(pz.true), pz.hat=  mean(pz.hat), pz.hat.bias = mean( (pz.hat - pz.true) ), pz.hat.mse  = mean( (pz.hat - pz.true)^2 ) ,
+                         b.rmse = norm( b.hat - b.true, type = "2"), b.mae = sum( abs( b.hat - b.true) ),
+                         beta.rmse = norm( beta.hat - beta.true, type = "2") , beta.mae = sum( abs( beta.hat - beta.true ) ),
+                         elapsed.time = sum(get_elapsed_time(fit))/60  )
+  }
+  return( results )
+}
+#' @noRd
+stan.fit.nonparametric.results  <- function(fit, Z, b.true, beta.true, lambda.true, frailty = FALSE){
+  b.hat                 <- colMeans(extract(fit)$b)
+  beta.hat              <- colMeans(extract(fit)$beta)
+  lambda.hat            <- colMeans(extract(fit)$lambda)
+  pz.true               <- logit(Z, b.true)
+  pz.hat                <- logit(Z, b.hat )
+
+  if(frailty == TRUE){ theta.hat <- mean(extract(fit)$theta) 
+  results               <- c( b.hat = b.hat, beta.hat = beta.hat, lambda.hat = lambda.hat, theta.hat = theta.hat,
+                              pz.true = mean(pz.true), pz.hat = mean(pz.hat), pz.hat.bias = mean( (pz.hat - pz.true) ), pz.hat.mse  = mean( (pz.hat - pz.true)^2 ) ,
+                              b.rmse = norm( b.hat - b.true, type = "2"), b.mae = sum( abs( b.hat - b.true) ),
+                              beta.rmse = norm( beta.hat - beta.true, type = "2") , beta.mae = sum( abs( beta.hat - beta.true ) ),
+                              lambda.rmse = norm( lambda.hat - lambda.true, type = "2") , lambda.mae = sum( abs( lambda.hat - lambda.true ) ),
+                              elapsed.time = sum(get_elapsed_time(fit))/60  )
+  }else{
+    results               <- c( b.hat = b.hat, beta.hat = beta.hat, lambda.hat = lambda.hat,
+                                pz.true = mean(pz.true), pz.hat = mean(pz.hat), pz.hat.bias = mean( (pz.hat - pz.true) ), pz.hat.mse  = mean( (pz.hat - pz.true)^2 ) ,
+                                b.rmse = norm( b.hat - b.true, type = "2"), b.mae = sum( abs( b.hat - b.true) ),
+                                beta.rmse = norm( beta.hat - beta.true, type = "2") , beta.mae = sum( abs( beta.hat - beta.true ) ),
+                                lambda.rmse = norm( lambda.hat - lambda.true, type = "2") , lambda.mae = sum( abs( lambda.hat - lambda.true ) ),
+                                elapsed.time = sum(get_elapsed_time(fit))/60  )
+  }
+  return( results )
+}

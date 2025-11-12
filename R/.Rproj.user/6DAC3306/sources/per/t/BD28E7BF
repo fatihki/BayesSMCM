@@ -1,0 +1,27 @@
+{
+    "id": "BD28E7BF",
+    "path": "~/BayesSMCM/R/fit.MCMC.SMCM.R",
+    "project_path": "fit.MCMC.SMCM.R",
+    "type": "r_source",
+    "hash": "3474082356",
+    "contents": "",
+    "dirty": false,
+    "created": 1761681634598.0,
+    "source_on_save": false,
+    "relative_order": 1,
+    "properties": {
+        "tempName": "Untitled2",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "131,48",
+        "scrollLine": "127"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1762172108,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1762172108246,
+    "read_only": false,
+    "read_only_alternatives": []
+}

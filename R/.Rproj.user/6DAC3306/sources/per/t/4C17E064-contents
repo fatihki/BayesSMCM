@@ -1,0 +1,153 @@
+#' print.smcm
+#' @title Print the summary results from SMCM or SMCFM fitting based on MCMC or Stan
+#' @description 
+#' This function prints the summary results of the fitted SMCM or SMCFM model based on MCMC or Stan. 
+#' It includes the posterior mean, posterior standard deviation, 95\% HPD credible interval, and Rhat for each parameter.
+#' The function handles both MCMC outputs from custom implementations and outputs from Stan models.
+#' It also calculates the posterior standard deviation and HPD interval for the cure probability \eqn{pi(z)}.
+#' 
+#' @import coda
+#' 
+#' @name print.smcm
+#' @param out A list variable, the real data analysis output from SMCM_MCMC or SMCFM_MCMC or stan_model
+#' @param stan.model Logical variable, if TRUE, it is from Stan, if FALSE, it is from our MCMC
+#' @param frailty Logical variable, if TRUE, it is cure frailty model, if FALSE, it is cure model
+#' @return A data frame containing the summary results including posterior mean, posterior SD, 95\% HPD credible interval, and Rhat for each parameter.
+#' @examples
+#' print.smcm(out = out.smcm.mcmc.J1, stan.model = FALSE, frailty = FALSE)
+#'
+#' @export
+print.smcm <- function(out, stan.model = FALSE, frailty = FALSE){
+  if (is.null(out$mcmc.info)) {
+    out$mcmc.info <- list(
+      chains = nchains,
+      nIter = nIter,
+      warmup = warmup,
+      thin = thin
+    )
+  }
+  
+  if (stan.model == FALSE) {
+    cat( "\n-", ifelse( frailty == FALSE, "SMCM.MCMC", "SMCFM.MCMC"), "Model Results (J =", sum( grepl("lambda", names(out$fit.results)) ), ")" ,"\n" )
+    df           <- array(out$Rhat, c(length(out$Rhat),5) )
+    rownames(df) <- colnames(out$Rhat)
+    colnames(df) <- c("Estimate(Mean)", "SD", "HPD lower", "HPD upper", "Rhat")
+    df[,1]       <- out$fit.results[1:nrow(df)]
+    df[,2]       <- SD.posterior.smcm(out, stan.model, frailty )[1:nrow(df)]
+    hpd.lower.upper <- as.matrix( rbind(HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="b.p",      warmup=out$mcmc.info$warmup, thin=out$mcmc.info$thin ),
+                                        HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="beta.p",   warmup=out$mcmc.info$warmup, thin=out$mcmc.info$thin ),
+                                        HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="lambda.p", warmup=out$mcmc.info$warmup, thin=out$mcmc.info$thin) ), ncol=2)
+    if(frailty == TRUE) {
+      df <- rbind(df, c( out$fit.results["theta.hat"], SD.posterior.smcm(out, stan.model, frailty )["SD.theta.hat"], NA, NA, NA))
+      hpd.lower.upper <- as.matrix( rbind(hpd.lower.upper,
+                                          HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="theta.p", warmup=out$mcmc.info$warmup, thin=out$mcmc.info$thin) ), ncol=2)
+      rownames(df)[nrow(df)] <- "theta"
+    }
+    rownames(hpd.lower.upper) <- NULL
+    colnames(hpd.lower.upper) <- NULL
+    df[,3:4]    <-  hpd.lower.upper
+    
+  }else{
+    cat( "\n-", ifelse( frailty == FALSE, "HSMCM.Rstan", "HSMCFM.Rstan"), "Model Results (J =", sum( grepl("lambda", names(out$fit.results)) ), ")" ,"\n" )
+    n_row        <- length(out$fit.results)-2
+    df           <- array(out$Rhat[1:n_row], c(n_row,5) )
+    rownames(df) <- names(out$Rhat)[1:n_row]
+    colnames(df) <- c("Estimate(Mean)","SD","HPD lower","HPD upper", "Rhat")
+    df[,1]       <- out$fit.results[1:n_row]
+    df[,2]       <- SD.posterior.smcm(out, stan.model, frailty )
+    hpd.lower.upper <- as.matrix( rbind(HPD.credible.interval.stan.fit(out, pars = "b.p"),
+                                        HPD.credible.interval.stan.fit(out, pars = "beta.p"),
+                                        HPD.credible.interval.stan.fit(out, pars = "lambda.p")), ncol=2 )
+    if(frailty == TRUE) {
+      hpd.lower.upper <- as.matrix( rbind(hpd.lower.upper,
+                                          HPD.credible.interval.stan.fit(out, pars="theta.p") ), ncol=2)
+    }
+    rownames(hpd.lower.upper) <- NULL
+    colnames(hpd.lower.upper) <- NULL
+    df[,3:4]    <-  hpd.lower.upper
+  }
+  
+
+  if (stan.model == FALSE) {
+    mcmc_chains_b     <- lapply( out$fit, function(x) { x$b.p[-c(1), ] } )      # removing the initial values!
+    processed_chains_b<- lapply(mcmc_chains_b, function(chain) {
+      # Apply burn-in and thinning
+      thinned_chain           <- chain[(out$mcmc.info$warmup + 1):nrow(chain), ][seq(1, nrow(chain) - out$mcmc.info$warmup, by = out$mcmc.info$thin), ]
+      # Create an mcmc object for each thinned chain
+      coda::mcmc(thinned_chain)
+    })
+    mcmc_list_b       <- coda::mcmc.list(processed_chains_b)
+    
+    pz                <- lapply( mcmc_list_b, function (x) { 
+      apply( x, 1, function (y){ mean(logit( scale.dummy.matrix(out$data$Z), y ))  } )
+    } )
+    mcmc_list_pz <- coda::mcmc.list(lapply(pz, coda::mcmc))
+    
+    Rhat_pz           <- matrix( coda::gelman.diag(mcmc_list_pz, autoburnin = F)$psrf[,1] , nrow=1 )
+    sd_pz             <- mean(unlist(lapply(mcmc_list_pz, sd) ) )
+    hpd.interval_pz   <- as.data.frame(coda::HPDinterval( coda::as.mcmc(unlist(mcmc_list_pz)), prob = 0.95 ) )
+  }else{
+    pz                <- apply(out$b.mcmc.chains, 1, function (y){ mean(logit( scale.dummy.matrix(out$data$Z), y ))  } )
+    sd_pz             <- sd(pz)
+    hpd.interval_pz   <- as.data.frame(coda::HPDinterval( coda::as.mcmc(pz), prob = 0.95 ) )
+    mcmc_pz_chains    <- coda::mcmc.list(
+      lapply(1:out$mcmc.info$chains, function(i) {
+        start         <- (i - 1) * (length(pz)/out$mcmc.info$chains) + 1
+        end           <- i * (length(pz)/out$mcmc.info$chains)
+        coda::mcmc(as.matrix(pz)[start:end, ])
+      })
+    )
+    Rhat_pz           <- matrix( coda::gelman.diag(coda::mcmc(mcmc_pz_chains), autoburnin = F)$psrf[,1] , nrow=1 )
+  }
+  
+  df                  <- rbind(df, c( out$fit.results["pz.hat"], sd_pz,  hpd.interval_pz$lower,  hpd.interval_pz$upper, Rhat_pz) )
+  rownames(df)[nrow(df)] <- "pi(z)"
+  print(round(df,4))
+  return( invisible(df) )
+}
+#' SD.posterior.smcm
+#' @title Calculate posterior standard deviation of the estimates from SMCM or SMCFM fitting based on MCMC or Stan
+#' @description 
+#' This function calculates the posterior standard deviation of the parameter estimates from the fitted SMCM or SMCFM model based on MCMC or Stan.
+#' It processes the MCMC chains or Stan outputs to compute the standard deviation for each parameter.
+#' The function handles both MCMC outputs from custom implementations and outputs from Stan models.
+#' @name SD.posterior.smcm
+#' @param out A list variable, the real data analysis output from SMCM_MCMC or SMCFM_MCMC or stan_model
+#' @param stan.model Logical variable, if TRUE, it is from Stan, if FALSE, it is from our MCMC
+#' @param frailty Logical variable, if TRUE, it is cure frailty model, if FALSE, it is cure model
+#' @return A numeric vector containing the posterior standard deviations for each parameter.
+#' @examples
+#' SD.posterior.smcm(out = out.smcm.mcmc.J1, stan.model = FALSE, frailty = FALSE)
+#' @export
+SD.posterior.smcm         <- function(out, stan.model = FALSE, frailty = FALSE){
+  
+  if(stan.model == FALSE){
+    out$b.chains          <- do.call(rbind, out$b.chains)
+    if( is.null(ncol(out$beta.chains[[1]])) == FALSE){
+      out$beta.chains     <- do.call(rbind, out$beta.chains)
+    }else{
+      out$beta.chains     <- matrix(unlist(out$beta.chains), ncol = 1)
+    }
+    if( is.null(ncol(out$lambda.chains[[1]])) == FALSE ){
+      out$lambda.chains   <- do.call(rbind, out$lambda.chains)
+    }else{
+      out$lambda.chains   <- matrix(unlist(out$lambda.chains), ncol = 1)
+    }
+    if(frailty == TRUE){
+      out$theta.chains    <- unlist(out$theta.chains)
+    }
+  }
+  
+  b.chains.sd             <- apply(out$b.chains, 2, sd)
+  beta.chains.sd          <- apply(out$beta.chains, 2, sd)
+  lambda.chains.sd        <- apply(out$lambda.chains, 2, sd)
+  out.sd                  <- c( SD.b.hat = b.chains.sd, SD.beta.hat = beta.chains.sd,  SD.lambda.hat = lambda.chains.sd )
+  
+  if(frailty == TRUE){
+    theta.mcmc.chains.sd  <- sd(out$theta.mcmc.chains)
+    out.sd                <- c( SD.b.hat = b.chains.sd, SD.beta.hat = beta.chains.sd, 
+                                D.lambda.hat = lambda.chains.sd, SD.theta.hat = theta.chains.sd )
+  }
+  
+  return(out.sd)
+}

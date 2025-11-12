@@ -1,0 +1,1 @@
+"0","out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar, nchains, nIter, warmup, thin, mcmc.parallel = ""parLapply"", standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )"

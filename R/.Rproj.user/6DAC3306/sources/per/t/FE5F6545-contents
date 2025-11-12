@@ -1,0 +1,70 @@
+---
+title: "BayesSMCM Tutorial"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{BayesSMCM Tutorial}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This vignette demonstrates how to use the `BayesSMCM` package to simulate data and fit a hierarchical semiparametric mixture cure frailty model.
+
+## Installation
+
+Install the latest released version from [CRAN](https://CRAN.R-project.org/package=GPTCM)
+
+```{r}
+library(BayesSMCM)
+```
+
+
+## A simulation study
+
+```{r}
+# simulate data
+n <- 300
+b.true <- c( 0.4, 0.5, 0.1)
+beta.true <- c(1, 0.2 )
+baseline.hazard.rates <- 1
+intervals <- c(0, 16)
+prob.cov.X <- c(0.5)
+prob.cov.Z <- c(0.5)
+dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
+str(dat1)
+
+# Bayesian settings for SMCMs
+nchains = 2; nIter   = 2500;   warmup = 500; thin = 10
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1 )
+```
+
+
+# Fit SMCM.MCMC model
+```{r}
+out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+```
+
+```{r}
+print.smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
+```
+
+
+# Fit SMCFM.MCMC model
+
+```{r}
+# prior settings
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1, c = 0.1, d = 0.1 )
+out.smcfm.mcmc = fit.MCMC.SMCFM ( data = dat1, hyperpar = priorPar, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+```
+
+
+```{r}
+print.smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
+```
+

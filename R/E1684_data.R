@@ -1,0 +1,46 @@
+#' ECOG E1684 Trial Data
+#'
+#' The Eastern Cooperative Oncology Group (ECOG) phase III clinical trials, E1684 and E1690, evaluated the efficacy of 
+#' Interferon Alfa-2b (IFN) as adjuvant therapy following surgical resection of deep primary or regionally metastatic melanoma. 
+#' A comprehensive account of these studies was provided by Kirkwood et al. (2000).
+#' 
+#' E1684 was the first of these trials, designed as a two-arm clinical study comparing high-dose IFN with observation (OBS). 
+#' A total of 286 patients were enrolled between 1984 and 1990, and the study was unblinded in 1993 and subsequently published in 1996.
+#' The results demonstrated that IFN had a significant effect on both relapse-free survival and overall survival, leading to U.S. Food and
+#' Drug Administration (FDA) approval of this regimen as adjuvant therapy for high-risk melanoma patients. Further details can be found 
+#' in Kirkwood et al. (2000) and Ibrahim et al. (2012).
+#' 
+#' This data is obtained from the \href{https://github.com/psioda/bayes-design-hist-cure-rate/tree/master/data/raw_data}{GitHub repository} 
+#' of Psioda and Ibrahim (2018).
+#'
+#'
+#' 
+#' @name E1684
+#' @docType data
+#' @usage E1684
+#' @keywords data
+#' @format A data frame with 285 rows and 12 variables:
+#' \describe{
+#'   \item{case}{patient case number.}
+#'   \item{age}{patient age in years.}
+#'   \item{trt}{treatment indicator, 0 = observation, 1 = high-dose IFN.}
+#'   \item{sex}{gender indicator, 0 = male, 1 = female.}
+#'   \item{perform}{performance status (0 = fully active, 1 = ambulatory)}
+#'   \item{nodes}{ number of positive nodes (category 1: 0 nodes, category 2: 1 node, category 3: 2-3 nodes, 
+#'   category 4: 4 or more nodes)}
+#'   \item{breslow}{Breslow thickness in millimeters.}
+#'   \item{stage}{stage of disease (1 = T4cN0, 2 = T14pN1cN0, 3 = T1-4cN1, 4 = Recurrent N+)}
+#'   \item{failtime}{time to relapse in years.}
+#'   \item{rfscens}{censoring indicator for time to relapse, 0 = did not relapse, 1 = relapsed}
+#'   \item{survtime}{time to death in years.}
+#'   \item{scens}{censoring indicator for time to death, 0 = alive, 1 = dead}
+#' }
+#' @references
+#' Kirkwood, J. M., Ibrahim, J. G., Sondak, V. K., Richards, J., Flaherty, L. E., Ernstoff, M. S., Smith, T. J., Rao, U., Steele, M., Blum, R. H. (2000). 
+#' High- and low-dose interferon alfa-2b in high-risk melanoma: First analysis of intergroup trial E1690/S9111/C9190. Journal of Clinical Oncology, 18(12), 2444–2458.
+#'
+#' Ibrahim, J. G., Chen, M. H., Chu, H. (2012). Bayesian methods in clinical trials: a Bayesian analysis of ECOG trials E1684 and E1690.
+#' BMC Medical Research Methodology, 12(1), 183.
+#' 
+#' Psioda, M. A., Ibrahim, J. G. (2018). Bayesian design of a survival trial with a cured fraction using historical data. Statistics in Medicine, 37(26):3814–3831.
+NULL

@@ -1,0 +1,47 @@
+load()
+load("~/BayesSMCM/data/e1684_e1690.rda")
+load("~/BayesSMCM/data/E1684.rda")
+load("~/BayesSMCM/data/E1690.rda")
+data = e1684_e1690
+table(data$study)
+colnames(data)
+
+data.E1690         <- data[data$study == "1690", ]
+data.E1690$nodes   <- as.numeric(data.E1690$nodes)
+data.E1690$breslow <- as.numeric(data.E1690$breslow) # 10 NA !!!  # if you use this variable, apply na.omit before that!!!
+# data.E1690         <- na.omit(data.E1690)
+# data.E1690$stage   <- as.factor(data.E1690$stage) # "-2" level should be removed before the use!
+dim(data.E1690)
+head(data.E1690)
+data.E1690 <- data.E1690[,c(-2)] # remove "study" colon
+
+e1684_e1690 <- read.table("mina-e1684-e1690.txt", header = TRUE)
+# Suppose data_raw is your data.frame
+usethis::use_data(e1684_e1690, overwrite = TRUE)
+
+E1690 = data.E1690
+usethis::use_data(E1690, overwrite = TRUE)
+
+
+
+setwd("~/BayesSMCM")
+devtools::document()
+# in \R folder, run:
+setwd("~/BayesSMCM")
+roxygen2::roxygenise() 
+
+#' @importFrom coda mcmc as.mcmc mcmc.list HPDinterval
+
+usethis::use_roxygen_md()    # optional: allows markdown in roxygen
+devtools::document()         # generates man/ and NAMESPACE
+
+# Check your package (simulate CRAN test)
+devtools::check()        # runs R CMD check locally
+# devtools::build()        # builds a source package create tar.gz file!
+# Install from your project directory
+devtools::install()
+
+
+#' @importFrom progress progress_bar
+
+

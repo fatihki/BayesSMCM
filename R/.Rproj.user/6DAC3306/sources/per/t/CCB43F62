@@ -1,0 +1,27 @@
+{
+    "id": "CCB43F62",
+    "path": "~/BayesSMCM/R/MCMC_helper_functions.R",
+    "project_path": "MCMC_helper_functions.R",
+    "type": "r_source",
+    "hash": "720376955",
+    "contents": "",
+    "dirty": false,
+    "created": 1762176206075.0,
+    "source_on_save": false,
+    "relative_order": 18,
+    "properties": {
+        "tempName": "Untitled4",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "7,57",
+        "scrollLine": "36"
+    },
+    "folds": "7|59|34|0|\n36|64|55|0|\n57|65|76|0|\n78|65|85|0|\n",
+    "lastKnownWriteTime": 1762165879,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1762176684026,
+    "read_only": false,
+    "read_only_alternatives": []
+}

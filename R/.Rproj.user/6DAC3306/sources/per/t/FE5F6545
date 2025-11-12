@@ -1,0 +1,27 @@
+{
+    "id": "FE5F6545",
+    "path": "~/BayesSMCM/vignettes/BayesSMCM.Rmd",
+    "project_path": null,
+    "type": "r_markdown",
+    "hash": "1941363580",
+    "contents": "",
+    "dirty": false,
+    "created": 1762174394417.0,
+    "source_on_save": false,
+    "relative_order": 15,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "62,17",
+        "scrollLine": "55",
+        "last_setup_crc32": ""
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1762174432,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1762175093288,
+    "read_only": false,
+    "read_only_alternatives": []
+}

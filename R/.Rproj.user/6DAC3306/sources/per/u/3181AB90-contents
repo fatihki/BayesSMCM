@@ -1,0 +1,236 @@
+
+## Package trials
+
+# generating data withm simSMCM
+source("simSMCM.R")
+#1. Generate data as in Yin and Ibrahim (2005), i.e. Scenario 1 in our simulation study
+n <- 300
+b.true <- c( 0.4, 0.5, 0.1)
+beta.true <- c(1, 0.2 )
+baseline.hazard.rates <- 1
+intervals <- c(0, 16)
+prob.cov.X <- c(0.5)
+prob.cov.Z <- c(0.5)
+dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2025, cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
+str(dat1)
+
+#2. Generate data as Scenario 2 in our simulation study
+n <- 200
+b.true <-  c( 0.25, -1, 1.5, 0.5)
+beta.true <- c(-1, 0.5, 2)
+baseline.hazard.rates <- c( 0.2, 0.15, 0.30)
+intervals <- c( 0, 10, 20, 30)
+prob.cov.X <- c(0.5)
+prob.cov.Z <- c(0.6)
+dat2 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2025, cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = FALSE )
+str(dat2)
+probs                 <- c(0.5, 0.9)
+#3. Generate data as Scenario 3 in our simulation study
+n <- 200
+b.true <- c( -0.5, 1, 1.5, -2)
+beta.true <- c( 1.5, -0.30, 0.7, 1)
+baseline.hazard.rates <- c( 0.15, 0.30, 0.50, 1)
+intervals <- c( 0, 15, 30, 45, 60)
+prob.cov.X <- c(0.5, 0.25, 0.65)
+prob.cov.Z <- c(0.3, 0.6)
+dat3 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, cens.start = 2*(30/365), cens.end = 60,  prob.cov.X, prob.cov.Z, same.cov = FALSE )
+str(dat3)
+probs                 <- c(0.4, 0.7, 0.95) 
+
+
+## fitting our models
+### 1.  fit.MCMC.SMCM.R ####
+source("MCMC.SMCM.R")
+source("fit.MCMC.SMCM.R")
+source("MCMC_helper_functions.R")
+nchains = 3; nIter   = 6000;   warmup = 2000; thin = 20
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1 )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+
+library(doParallel)
+# "parLapply"   "foreach" "lapply"
+out.smcm.mcmc.J1 = fit.MCMC.SMCM ( data = dat2, hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                      mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+# out.smcm.mcmc.J1$fit.results
+round(out.smcm.mcmc.J1$fit.results,5)
+out.smcm.mcmc.J1.r1$Rhat
+print.smcm(out = out.smcm.mcmc.J1, stan.model = FALSE, frailty = FALSE)
+# out.smcm.mcmc.J1$loo.results
+matrix( out.smcm.mcmc.J1$loo.results[ Bayesian_criteria ], ncol= length(Bayesian_criteria), 
+        byrow=T, dimnames = list( NULL, Bayesian_criteria  ) )
+
+library(ggplot2)
+mcmc_trace.smcm(fit.mcmc.chains=out.smcm.mcmc.J1.r1$fit, pars="b.p", warmup, thin )
+mcmc_trace.smcm(fit.mcmc.chains=out.smcm.mcmc.J1.r1$fit, pars="beta.p", warmup, thin )
+mcmc_trace.smcm(fit.mcmc.chains=out.smcm.mcmc.J1.r1$fit, pars="lambda.p", warmup, thin )
+HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="b.p",     warmup, thin )
+HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="beta.p",   warmup, thin )
+HPD.interval.mcmc(fit.mcmc.chains=out$fit, pars="lambda.p", warmup, thin)
+
+### 2.  fit.MCMC.SMCFM.R ####
+source("MCMC.SMCFM.R")
+source("fit.MCMC.SMCFM.R")
+
+nchains = 3; nIter   = 6000;   warmup = 2000; thin = 20
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1,  c = 0.1, d = 0.1  )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+
+library(doParallel)
+# "parLapply"   "foreach" "lapply"
+out.smcfm.mcmc.J1 = fit.MCMC.SMCFM ( data = dat2, hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                   mcmc.parallel = "parLapply", standardize = FALSE, probs = c(0.5, 0.9), save_loglik = 1, seed = 2025 )
+# out.smcm.mcmc.J1$fit.results
+round(out.smcfm.mcmc.J1$fit.results,5)
+out.smcfm.mcmc.J1$Rhat
+print.smcm(out = out.smcfm.mcmc.J1, stan.model = FALSE, frailty = TRUE)
+
+mcmc_trace.smcm(fit.mcmc.chains=out.smcfm.mcmc.J1$fit, pars="b.p", warmup, thin )
+mcmc_trace.smcm(fit.mcmc.chains=out.smcfm.mcmc.J1$fit, pars="beta.p", warmup, thin )
+mcmc_trace.smcm(fit.mcmc.chains=out.smcfm.mcmc.J1$fit, pars="lambda.p", warmup, thin )
+
+
+
+
+
+
+
+
+
+
+
+
+# creating E1690 dataset
+load("~/BayesSMCM/data/e1684_e1690.rda")
+  
+data.E1690         <- e1684_e1690[e1684_e1690$study == "1690", ]
+data.E1690$nodes   <- as.numeric(data.E1690$nodes)
+data.E1690$breslow <- as.numeric(data.E1690$breslow)                          # 10 NA 
+data.E1690         <- data.E1690[,c(-2)]                                      # remove "study" colon
+head(data.E1690) 
+# usethis::use_data(E1690, overwrite = TRUE)
+
+# creating E1684 dataset
+table(e1684_e1690$study)
+E1684         <- e1684_e1690[e1684_e1690$study == "1684", ]
+E1684$nodes   <- as.numeric(E1684$nodes)
+E1684$breslow <- as.numeric(E1684$breslow)                          # 6 NA
+E1684         <- E1684[,c(-2)]                                      # remove "study" colon
+head(E1684)
+usethis::use_data(E1684, overwrite = TRUE)
+
+
+# colon.data = survival::colon 
+# usethis::use_data(colon.data, overwrite = TRUE)
+
+
+## fit trial 
+
+data.E1690         <- e1684_e1690[e1684_e1690$study == "1690", ]
+data.E1690$nodes   <- as.numeric(data.E1690$nodes)
+data.E1690$breslow <- as.numeric(data.E1690$breslow)  
+
+
+data.E1690         <- E1690                                    
+data.E1690.RFS <- data.E1690[data.E1690$failtime > 0, ]
+dim(data.E1690.RFS)
+# summary(data.E1690.RFS$failtime)
+# table(data.E1690.RFS$rfscens)
+# summary(data.E1690.RFS$age)
+# table(data.E1690.RFS$sex)
+
+# real data based on the relapse free survival time
+real.data.RFS = list()
+real.data.RFS$X =  as.matrix( cbind( trt=data.E1690.RFS$trt, age=data.E1690.RFS$age, sex=data.E1690.RFS$sex  ) )
+head(real.data.RFS$X)
+real.data.RFS$Z =  cbind(1, real.data.RFS$X)
+head(real.data.RFS$Z)
+
+real.data.RFS$observed_time = data.E1690.RFS$failtime 
+real.data.RFS$delta         = data.E1690.RFS$rfscens 
+
+### trial for fit.MCMC.SMCM.R
+source("MCMC.SMCM.R")
+source("fit.MCMC.SMCM.R")
+source("MCMC_helper_functions.R")
+nchains = 2; nIter   = 2500;   warmup = 500; thin = 10
+# nchains = 3; nIter   = 60000;   warmup = 10000; thin = 50 # as in the paper for out.smcm.mcmc.J1 
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1 )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+
+# "parLapply"   "foreach" "lapply"
+out.smcm.mcmc.J1.r1 = fit.MCMC.SMCM ( data = real.data.RFS, hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                                   mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 0, seed = 2025 )
+out.smcm.mcmc.J1.r1$fit.results
+round(out.smcm.mcmc.J1$fit.results,5)
+out.smcm.mcmc.J1$Rhat
+# out.smcm.mcmc.J1$loo.results
+matrix( out.smcm.mcmc.J1$loo.results[ Bayesian_criteria ], ncol= length(Bayesian_criteria), 
+        byrow=T, dimnames = list( NULL, Bayesian_criteria  ) )
+
+
+### trial for fit.MCMC.SMCFM.R
+source("MCMC.SMCFM.R")
+source("fit.MCMC.SMCFM.R")
+source("MCMC_helper_functions.R") 
+nchains = 2; nIter   = 12500;   warmup = 2500; thin = 10
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1,  c = 0.1, d = 0.1  )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+
+# "parLapply"   "foreach" "lapply"
+# debug(fit.MCMC.SMCFM )
+out.smcfm.mcmc.J1 = fit.MCMC.SMCFM ( data = real.data.RFS, hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                      mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+out.smcfm.mcmc.J1$fit.results
+round(out.smcfm.mcmc.J1$fit.results,5)
+out.smcfm.mcmc.J1$Rhat
+# out.smcfm.mcmc.J1$loo.results
+matrix( out.smcfm.mcmc.J1$loo.results[ Bayesian_criteria ], ncol= length(Bayesian_criteria), 
+        byrow=T, dimnames = list( NULL, Bayesian_criteria  ) )
+
+
+### trial for fit.SMCM.RStan
+source("fit.SMCM.RStan.R")
+library(rstan)
+nchains = 1; nIter   = 2500;   warmup = 500; thin = 10
+priorPar = list( beta_sigma = 1000, b_sigma = 1000, lambda_a = 0.1, lambda_b = 0.1  )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+
+out.smcm.rstan.J1   = fit.SMCM.RStan( data = real.data.RFS,  hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                                      standardize = FALSE, probs = 0, save_loglik = 1, seed =  165251 )
+round(out.smcm.rstan.J1$fit.results,5)
+out.smcm.rstan.J1$Rhat[1:10]
+matrix( out.smcm.rstan.J1$loo.results[ Bayesian_criteria ], ncol= length(Bayesian_criteria), 
+        byrow=T, dimnames = list( NULL, Bayesian_criteria  ) )
+
+
+
+### trial for fit.HSMCM.RStan
+source("fit.HSMCM.RStan.R")
+source("Bayes_helper_functions.R")
+library(rstan)
+nchains = 2; nIter   = 2500;   warmup = 500; thin = 10
+priorPar = list( r1 = 1, delta1 = 0.0001, r2=1, delta2 = 0.0001, lambda_a = 0.1, lambda_b = 0.1  )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+# debug(fit.HSMCM.RStan)
+out.hsmcm.rstan.J1.r2   = fit.HSMCM.RStan( data = real.data.RFS,  hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                     standardize = FALSE, probs = 0, save_loglik = 1, seed =  1 )
+round(out.hsmcm.rstan.J1.r2$fit.results,5)
+out.hsmcm.rstan.J1.r2$Rhat[1:8]
+matrix( out.hsmcm.rstan.J1$loo.results[ Bayesian_criteria ], ncol= length(Bayesian_criteria), 
+        byrow=T, dimnames = list( NULL, Bayesian_criteria  ) )
+
+
+### trial for fit.HSCFM.RStan
+source("fit.HSMCFM.RStan.R")
+source("Bayes_helper_functions.R")
+library(rstan)
+nchains = 2; nIter   = 2500;   warmup = 500; thin = 10
+priorPar = list( r1 = 1, delta1 = 0.0001, r2=1, delta2 = 0.0001, lambda_a = 0.1, lambda_b = 0.1, theta_a = 0.1, theta_b = 0.1  )
+Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+# debug(fit.HSMCFM.RStan)
+out.hsmcfm.rstan.J1.r2   = fit.HSMCFM.RStan( data = real.data.RFS,  hyperpar = priorPar, nchains, nIter, warmup, thin, 
+                                           standardize = FALSE, probs = 0, save_loglik = 1, seed =  1 )
+round(out.hsmcfm.rstan.J1$fit.results,5)
+out.hsmcfm.rstan.J1.r2$Rhat[1:9]
+matrix( out.hsmcfm.rstan.J1$loo.results[ Bayesian_criteria ], ncol= length(Bayesian_criteria), 
+        byrow=T, dimnames = list( NULL, Bayesian_criteria  ) )

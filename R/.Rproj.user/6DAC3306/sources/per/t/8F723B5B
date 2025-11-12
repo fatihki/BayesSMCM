@@ -1,0 +1,27 @@
+{
+    "id": "8F723B5B",
+    "path": "~/BayesSMCM/R/Rhat.mcmc.R",
+    "project_path": "Rhat.mcmc.R",
+    "type": "r_source",
+    "hash": "3963315998",
+    "contents": "",
+    "dirty": false,
+    "created": 1762172204795.0,
+    "source_on_save": false,
+    "relative_order": 12,
+    "properties": {
+        "tempName": "Untitled4",
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "52,38",
+        "scrollLine": "42"
+    },
+    "folds": "",
+    "lastKnownWriteTime": 1762172218,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1762172218404,
+    "read_only": false,
+    "read_only_alternatives": []
+}

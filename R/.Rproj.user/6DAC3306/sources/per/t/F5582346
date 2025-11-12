@@ -1,0 +1,26 @@
+{
+    "id": "F5582346",
+    "path": "~/FatihK/SemiParMixtureCure/real_data_trial_R1.R",
+    "project_path": null,
+    "type": "r_source",
+    "hash": "3691375239",
+    "contents": "",
+    "dirty": false,
+    "created": 1761734710726.0,
+    "source_on_save": false,
+    "relative_order": 6,
+    "properties": {
+        "source_window_id": "",
+        "Source": "Source",
+        "cursorPosition": "1198,0",
+        "scrollLine": "1191"
+    },
+    "folds": "506|67|539|0|\n548|66|630|0|\n",
+    "lastKnownWriteTime": 1757624140,
+    "encoding": "UTF-8",
+    "collab_server": "",
+    "source_window": "",
+    "last_content_update": 1761763925657,
+    "read_only": false,
+    "read_only_alternatives": []
+}

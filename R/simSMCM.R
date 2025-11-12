@@ -1,0 +1,280 @@
+#' @title Function to generate data from Semi-parametric Mixture Cure Model (SMCM)
+#'
+#' @description
+#' Simulate data from Semi-parametric Mixture Cure Model (SMCM) with the piecewise exponential baseline hazard function.
+#'
+#' @name simSMCM
+#' 
+#' @importFrom mvnfast rmvn 
+#'
+#' @param n Sample size
+#' @param b.true True regression coefficients for the incidence part of the model.
+#' @param beta.true True regression coefficients for the latency part of the model. 
+#' @param baseline.hazard.rates Baseline hazard parameters for the piecewise exponential distribution.
+#' @param intervals Vector of interval boundaries.
+#' @param seed Random seed for reproducibility.
+#' @param cens.start Start time for censoring distribution.
+#' @param cens.end End time for censoring distribution.
+#' @param prob.cov.X Vector of probabilities for generating binary covariates in \eqn{\bm X}, size at most length(beta.true).
+#' @param prob.cov.Z Vector of probabilities for generating binary covariates in \eqn{\bm Z}, size at most length(b.true) - 1.
+#' @param same.cov Logical indicating whether to use the same covariates for both \eqn{\bm X} and \eqn{\bm Z}.
+#'
+#' @return A list containing:
+#' \item{b.true}{True regression coefficients for the incidence part of the model.}
+#' \item{beta.true}{True regression coefficients for the latency part of the model.}
+#' \item{baseline.hazard.rates}{Baseline hazard parameters for the piecewise exponential distribution.}
+#' \item{X}{Covariate matrix for the incidence part of the model.}
+#' \item{Z}{Covariate matrix for the latency part of the model.}
+#' \item{observed_time}{Observed times to the event.}
+#' \item{delta}{Censoring indicators for the event time (1=event occurred, 0=censored).}
+#' \item{censor.rate}{Censoring rate for the simulated data.}
+#' \item{intervals}{Vector of interval boundaries.}
+#' 
+#' @examples
+#'
+#' #1. Generate data as in Yin and Ibrahim (2005), i.e. Scenario 1 in the simulation study of
+#' # Kızılaslan and Vitelli (2025).
+#' n <- 300
+#' b.true <- c( 0.4, 0.5, 0.1)
+#' beta.true <- c(1, 0.2 )
+#' baseline.hazard.rates <- 1
+#' intervals <- c(0, 16)
+#' prob.cov.X <- c(0.5)    
+#' prob.cov.Z <- c(0.5)    
+#' dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, 
+#'   cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
+#' str(dat1)
+#'
+#' #2. Generate data as Scenario 2 in the simulation study of Kızılaslan and Vitelli (2025).
+#' n <- 200
+#' b.true <-  c( 0.25, -1, 1.5, 0.5)
+#' beta.true <- c(-1, 0.5, 2)
+#' baseline.hazard.rates <- c( 0.2, 0.15, 0.30)
+#' intervals <- c( 0, 10, 20, 30) 
+#' prob.cov.X <- c(0.5)    
+#' prob.cov.Z <- c(0.6)    
+#' dat2 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, 
+#'   cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = FALSE )
+#' str(dat2)
+#' 
+#' #3. Generate data as Scenario 3 in the simulation study of Kızılaslan and Vitelli (2025).
+#' n <- 200
+#' b.true <- c( -0.5, 1, 1.5, -2)
+#' beta.true <- c( 1.5, -0.30, 0.7, 1)
+#' baseline.hazard.rates <- c( 0.15, 0.30, 0.50, 1)
+#' intervals <- c( 0, 15, 30, 45, 60) 
+#' prob.cov.X <- c(0.5, 0.25, 0.65)    
+#' prob.cov.Z <- c(0.3, 0.6)   
+#' dat3 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, 
+#'   cens.start = 2*(30/365), cens.end = 60,  prob.cov.X, prob.cov.Z, same.cov = FALSE )
+#' str(dat3)
+#' 
+#' @references 
+#' Yin, G., Ibrahim, J. G. (2005). Cure rate models: a unified approach. Canadian Journal of Statistics, 33(4):559–570.
+#'
+#' Kızılaslan, F., Vitelli, V. (2025). Bayesian Semiparametric Mixture Cure (Frailty) Model, arXiv \url{https://arxiv.org/???}.
+#'
+#' @export
+simSMCM      <- function(n, b.true, beta.true, baseline.hazard.rates, intervals, seed, cens.start, cens.end,  prob.cov.X, prob.cov.Z, same.cov) {
+  
+  p1 <- length(beta.true)           ;   cont.cov.X <- p1 - length(prob.cov.X)
+  p2 <- length(b.true)              ;   cont.cov.Z <- p2 - length(prob.cov.Z) - 1
+  
+  set.seed(seed + 10);  X <- sapply(prob.cov.X, function(x) rbinom(n,1,x) ) 
+  set.seed(seed + 5);   Z <- sapply(prob.cov.Z, function(x) rbinom(n,1,x) )  
+  
+  if(cont.cov.X != 0){  
+    set.seed(seed + 10)
+    X <- cbind(X, rmvn(n, mu=rep(0,cont.cov.X), sigma = diag(cont.cov.X) ) ) 
+  }else{
+    X = X
+  }
+  
+  if(same.cov == TRUE ){ 
+    Z  <- cbind(1, X) 
+  }else{
+    if(cont.cov.Z != 0){  
+      set.seed(seed + 5)
+      Z <- cbind(1, Z, rmvn(n, mu=rep(0,cont.cov.Z), sigma = diag(cont.cov.Z) )) 
+    }else{
+      Z  <- cbind(1, Z)                                                         # only categorical variables case
+    }
+  }
+  
+  pz.true              <- logit(Z,b.true)
+  set.seed(seed + 5)
+  data                 <- generate_piecewise_exponential_survival(cens.start, cens.end, intervals, baseline.hazard.rates, b_coef=b.true, betaa_coef=beta.true, mX=X, mZ=Z)
+  
+  return( list(b.true=b.true, beta.true=beta.true, baseline.hazard.rates=baseline.hazard.rates, X=X, Z=Z, observed_time = data$observed_time, delta = data$delta, censor.rate = data$censor.rate, intervals=intervals) )
+}
+#' @noRd
+logit         <- function(mX, vB) {
+  w           <- 1/(1+exp(-mX %*% vB))
+  return(w)
+}
+#' Internal helper functions and survival data generation for our models
+#' @noRd
+scale.dummy.matrix <- function(X) {
+  
+  Xscaled = matrix(NA, nrow = nrow(X), ncol = ncol(X))
+  
+  for (j in 1:ncol(X)) {
+    if ( all(X[,j] == floor(X[,j])) ) {
+      Xscaled[,j] = X[,j]                                                         # not scale if all the values are integer (for categorical variables)
+    } else{
+      Xscaled[,j] = scale(X[,j])
+    }
+  }
+  colnames(Xscaled) <- colnames(X)
+  return(Xscaled)
+}
+#' @noRd
+random_data_Weibull_MC <- function(alpha, b_coef, betaa_coef, mX, mZ, censor.rate) {
+  n               <- nrow(mX)
+  t_star          <- rep(NA, n)
+  pi_Z            <- rep(NA, n)
+  
+  for (i in 1:n) {
+    u             <- runif(1) 
+    pi_Z[i]       <- logit(mZ[i,], b_coef)
+    
+    if( u < pi_Z[i] ) {
+      t_star[i]    <- rweibull( 1, shape = alpha, scale = exp( -(mX[i,] %*% betaa_coef) / alpha ) )
+      if(t_star[i] < 0.1) { t_star[i] <- t_star[i] + runif(1,0.5,censor.rate/2) }  # since some random numbers are very small, I add "1" manually to get more proper observed_time!
+    } else { 
+      t_star[i]    <- .Machine$double.xmax 
+    } 
+  }
+  
+  censor_time     <- runif(n, min=0.5, max=censor.rate) # rexp(n, rate=censor.rate) 
+  observed_time   <- pmin(t_star, censor_time)
+  censor          <- as.numeric(t_star <= censor_time)
+  
+  pi_Z[pi_Z == 0] <- .Machine$double.eps 
+  S_uncured       <- 1 - pweibull( observed_time, shape=alpha, scale = exp( -mX %*% betaa_coef ) / alpha )
+  S_pop           <- (1 - pi_Z) + ( pi_Z * S_uncured )
+  
+  return( list( observed_time = observed_time, delta = censor, censor.rate = 1-(sum(censor)/n), uncure_rate = pi_Z, S_uncured = S_uncured, S_pop = S_pop ) ) 
+}
+#' @noRd
+Expo <- function(times, surv) {
+  z1 <- -log(surv[1])
+  t1 <- times[1]
+  lambda <- z1 / (t1)
+  list(rate = lambda)
+}
+#' @noRd
+Weibull  <- function(times, surv) {
+  z1     <- -log(surv[1])
+  z2     <- -log(surv[2])
+  t1     <- times[1]
+  t2     <- times[2]
+  gamma  <- log(z2 / z1) / log(t2 / t1)
+  lambda <- z1 / (t1^gamma)
+  list(scale = lambda, shape = gamma)
+}
+#' @noRd
+rWeibull_MC  <- function(cens.start, cens.end, surv_times, surv_val, b_coef, betaa_coef, mX, mZ) {
+  n          <- nrow(mX)
+  t_star     <- rep(NA, n)
+  pi_Z       <- rep(NA, n)
+  
+  surv       <- Weibull(surv_times, surv_val)
+  dt         <- (-log(runif(n)) * (1 / surv$scale) * exp(-as.matrix(mX) %*% betaa_coef))^(1 / surv$shape)
+  if( sum(dt<30/365)!= 0 ) { dt[dt<30/365] = dt[dt<30/365] + 30/365 }           # update survival times less than 30/365(a month)
+  
+  for (i in 1:n) {
+    u            <- runif(1) 
+    pi_Z[i]      <- logit(mZ[i,], b_coef)
+    
+    if( u < pi_Z[i] ) {
+      t_star[i]  <- dt[i]
+    } else { 
+      t_star[i]  <- .Machine$double.xmax 
+    } 
+  }
+  
+  # years similar to TCGA-BRCA data  
+  cens1          <- runif(n, cens.start, cens.end)
+  loss           <- Expo(times = cens.end, surv = 0.8)
+  cens2          <- rexp(n, rate = loss$rate)
+  censor_time    <- pmin(cens1, cens2)
+  
+  observed_time  <- pmin(t_star, censor_time)
+  censor         <- as.numeric(t_star <= censor_time)
+  
+  return( list( observed_time = observed_time, delta = censor, censor.rate = 1-(sum(censor)/n), surv=surv ) ) 
+}
+#' @noRd
+generate_piecewise_exponential_survival <- function(cens.start, cens.end, intervals, baseline.hazard.rates, b_coef, betaa_coef, mX, mZ) {
+  # n: Number of individuals
+  # intervals: Vector of interval boundaries (e.g., c(0, 3, 6, 9))
+  # baseline_hazard_rates: Baseline hazard rates for each interval (e.g., c(0.2, 0.1, 0.05))
+  # beta: Vector of regression coefficients (matching the number of covariates)
+  # covariates: Matrix of covariates (n x p), where p is the number of covariates
+  n                 <- nrow(mX)
+  t_star            <- rep(NA, n)
+  pi_Z              <- rep(NA, n)
+  # Check if input lengths are correct
+  if (length(intervals) != (length(baseline.hazard.rates) + 1)) {
+    stop("The length of intervals should be one more than the length of baseline.hazard.rates.")
+  }
+  
+  if (ncol(mX) != length(betaa_coef)) {
+    stop("The length of beta should match the number of covariate columns.")
+  }
+  
+  # Initialize vectors to store results
+  survival_times     <- rep(NA, n)
+  
+  # Compute the linear predictor (covariate effects) for each individual
+  covariate_effects  <- mX %*% betaa_coef  # n x 1 vector of covariate effects
+  
+  for (i in 1:n) {
+    # Calculate individual-specific hazard rates based on covariates
+    lambda_i         <- baseline.hazard.rates * exp(covariate_effects[i])  # Adjusted hazard rates for individual i
+    T                <- 0  # Initialize survival time for individual i
+    
+    # Simulate survival time across the piecewise intervals
+    for (j in 1:length(lambda_i)) {
+      # Calculate the survival time in the current interval
+      u              <- runif(1)
+      t_j            <- -log(u) / lambda_i[j]  # Exponential survival time in the current interval
+      
+      # Check if the event occurs within the current interval
+      if (T + t_j    < intervals[j + 1]) {
+        T            <- T + t_j
+        break
+      } else {
+        # If event does not occur in this interval, move to the next interval
+        T             <- intervals[j + 1]
+      }
+    }
+    survival_times[i] <- T
+  }
+  
+  if( sum(survival_times<30/365)!= 0 ) { survival_times[survival_times<30/365] = survival_times[survival_times<30/365] + 30/365 } #update survival times less than 30/365(a month)
+  
+  for (i in 1:n) {
+    u            <- runif(1) 
+    pi_Z[i]      <- logit(mZ[i,], b_coef)
+    
+    if( u < pi_Z[i] ) {
+      t_star[i]  <- survival_times[i]
+    } else { 
+      t_star[i]  <- .Machine$double.xmax #as infinity 1e+308
+    } 
+  }
+  
+  #years similar to TCGA-BRCA data  
+  cens1          <- runif(n, cens.start, cens.end)
+  loss           <- Expo(times = cens.end, surv = 0.3)
+  cens2          <- rexp(n, rate = loss$rate)
+  censor_time    <- pmin(cens1, cens2)
+  
+  observed_time   <- pmin(t_star, censor_time)
+  censor          <- as.numeric(t_star <= censor_time)
+  
+  return( list( observed_time = observed_time, delta = censor, censor.rate = 1-(sum(censor)/n) ) ) 
+  
+}

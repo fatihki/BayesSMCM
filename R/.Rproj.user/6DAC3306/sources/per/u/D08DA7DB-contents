@@ -1,0 +1,15 @@
+library(BayesSMCM)
+n <- 300
+b.true <- c( 0.4, 0.5, 0.1)
+beta.true <- c(1, 0.2 )
+baseline.hazard.rates <- 1
+intervals <- c(0, 16)
+prob.cov.X <- c(0.5)
+prob.cov.Z <- c(0.5)
+dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
+str(dat1)
+nchains = 2; nIter   = 7500;   warmup = 2500; thin = 10
+priorPar = list( r1 = 1, delta1 = 0.0001, r2 = 1, delta2 = 0.0001, a = 0.1, b = 0.1 )
+# Bayesian_criteria              <- c("lpml", "LL", "AIC", "BIC", "k", "p_D", "DIC")
+out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+print.smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
