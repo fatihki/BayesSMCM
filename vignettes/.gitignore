@@ -1,2 +1,6 @@
+# Ignore knitted outputs
 *.html
-*.R
+*.Rout
+*.RData
+*.Rhistory
+vignettes/figure/

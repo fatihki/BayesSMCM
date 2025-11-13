@@ -24,9 +24,9 @@ This vignette demonstrates how to use the `BayesSMCM` package to simulate data a
 
 Install the latest development version from [GitHub](https://github.com/fatihki/BayesSMCM)
 
-```{r include=FALSE}
-#install.packages("remotes")
-remotes::install_github("fatihki/BayesSMCM")
+```{r message=FALSE, warning=FALSE}
+# install.packages("remotes")
+# remotes::install_github("fatihki/BayesSMCM")
 ```
 
 
@@ -76,22 +76,18 @@ Here, we only consider the case of $J = 1$, in which probs is defined as `probs 
 #### Fitting SMCM.MCMC model
 
 ```{r}
-out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar.smcm, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
+out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar.smcm,
+                                nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                 standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
-```
-
-```{r}
 print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
 ```
 
 #### Fitting SMCFM.MCMC model
 
 ```{r}
-out.smcfm.mcmc = fit.MCMC.SMCFM ( data = dat1, hyperpar = priorPar.smcfm, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
+out.smcfm.mcmc = fit.MCMC.SMCFM ( data = dat1, hyperpar = priorPar.smcfm, 
+                                  nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                   standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
-```
-
-```{r}
 print_smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
 ```
 
@@ -106,7 +102,8 @@ priorPar.smcm.rstan = list( sigma_beta = 1000, sigma_b = 1000, a = 0.1, b = 0.1)
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.smcm.rstan = fit.SMCM.RStan(data=dat1, hyperpar = priorPar.smcm.rstan, nchains, nIter, warmup, thin, standardize = FALSE,
+out.smcm.rstan = fit.SMCM.RStan(data = dat1, hyperpar = priorPar.smcm.rstan,
+                                nchains, nIter, warmup, thin, standardize = FALSE,
                                 probs = 0, save_loglik = 1, seed = 2025  )
 ```
 
@@ -123,7 +120,8 @@ priorPar.smcfm.rstan = list( sigma_beta = 1000, sigma_b = 1000,a = 0.1, b = 0.1,
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.smcfm.rstan =  fit.SMCFM.RStan(data=dat1, hyperpar =  priorPar.smcfm.rstan, nchains, nIter, warmup, thin, standardize = FALSE,
+out.smcfm.rstan =  fit.SMCFM.RStan(data = dat1, hyperpar =  priorPar.smcfm.rstan,
+                                   nchains, nIter, warmup, thin, standardize = FALSE,
                                    probs = 0, save_loglik = 1, seed = 2025  )
 ```
 
@@ -135,7 +133,8 @@ print_smcm( out.smcfm.rstan, stan.model = TRUE, frailty = TRUE)
 #### Fitting HSMCM.Rstan model
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.hsmcm.rstan = fit.HSMCM.RStan(data=dat1, hyperpar =  priorPar.smcm , nchains, nIter, warmup, thin, standardize = FALSE,
+out.hsmcm.rstan = fit.HSMCM.RStan(data = dat1, hyperpar = priorPar.smcm,
+                                  nchains, nIter, warmup, thin, standardize = FALSE,
                                   probs = 0, save_loglik = 1, seed = 2025  )
 ```
 
@@ -146,7 +145,8 @@ print_smcm( out.hsmcm.rstan, stan.model = TRUE, frailty = FALSE)
 #### Fitting HSMCFM.Rstan model
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.hsmcfm.rstan = fit.HSMCFM.RStan(data=dat1, hyperpar = priorPar.smcfm, nchains, nIter, warmup, thin, standardize = FALSE,
+out.hsmcfm.rstan = fit.HSMCFM.RStan(data = dat1, hyperpar = priorPar.smcfm,
+                                    nchains, nIter, warmup, thin, standardize = FALSE,
                                     probs = 0, save_loglik = 1, seed = 2025  )
 ```
 
@@ -191,7 +191,7 @@ real.data.RFS$delta         = data.E1690.RFS$rfscens
 
 ```{r}
 # Bayesian settings:
-nchains = 3; nIter   = 7500;   warmup = 2500; thin = 10
+nchains = 3; nIter  = 7500;  warmup = 2500; thin = 10
 # priors for SMCMs
 priorPar.smcm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, b = 0.1 )
 # priors for SMCFMs
@@ -203,8 +203,9 @@ priorPar.smcfm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, 
 When $J=1$ case, `probs = 0` is selected.
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.smcm.mcmc.E1690 = fit.MCMC.SMCM ( data = real.data.RFS, hyperpar = priorPar.smcm, nchains, nIter, warmup, thin, 
-                                         mcmc.parallel = "parLapply", standardize = FALSE, probs = 0, save_loglik = 1, seed =  165251)
+out.smcm.mcmc.E1690 = fit.MCMC.SMCM ( data = real.data.RFS, hyperpar = priorPar.smcm,
+                                      nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
+                                      standardize = FALSE, probs = 0, save_loglik = 1, seed =  165251)
 ```
 
 
@@ -215,8 +216,9 @@ print_smcm( out.smcm.mcmc.E1690, stan.model = FALSE, frailty = FALSE )
 ### Fitting HSMCM.Rstan model
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.hsmcm.rstan.E1690 = fit.HSMCM.RStan(data = real.data.RFS, hyperpar = priorPar.smcm , nchains, nIter, warmup, thin, 
-                                        standardize = FALSE, probs = 0, save_loglik = 1, seed = 165251  )
+out.hsmcm.rstan.E1690 = fit.HSMCM.RStan(data = real.data.RFS, hyperpar = priorPar.smcm,
+                                        nchains, nIter, warmup, thin, standardize = FALSE,
+                                        probs = 0, save_loglik = 1, seed = 165251  )
 ```
 
 ```{r}
