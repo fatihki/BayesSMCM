@@ -164,7 +164,7 @@ After excluding $10$ patients with zero RFS, the dataset includes $n=417$ patien
 The dataset in this application comprises: $t:$ observed RFS in years (mean $2.31$ years); $\delta:$ censoring indicator ($177$ right-censored observations); $x_1:$ treatment group ($212$ patients in the high-dose IFN arm = 1, $205$ in the observation arm = 0); $x_2:$ age (continuous, range $19.13$–$78.05$, mean $48.05$ years); and $x_3:$ sex ($261$ male = 0, $156$ female = 1).
 For the incidence part of the model, we use the same covariates in addition to the intercept, i.e., $\mathbf{z} = [\mathbf{1}, \mathbf{x}]$.
 Among patients who did not experience relapse, both the median and mean follow-up times exceeded four years. 
-Figure \@ref(fig:plot1) displays Kaplan–Meier (KM) estimates of the survival curves overall and stratified by treatment group (high-dose IFN vs. observation). A clear plateau at approximately four years suggests the presence of long-term survivors, motivating the use of a cure rate model for this dataset.
+The following figures display Kaplan–Meier (KM) estimates of the survival curves overall and stratified by treatment group (high-dose IFN vs. observation). A clear plateau at approximately four years suggests the presence of long-term survivors, motivating the use of a cure rate model for this dataset.
 
 We here apply only two proposed mixture cure model approaches- SMCM (MCMC) and HSMCM (RStan)- to the E1690 dataset.
 As an example we set $J = 1$ for the semiparametric structure. 
