@@ -75,19 +75,35 @@ Here, we only consider the case of $J = 1$, in which probs is defined as `probs 
 
 #### Fitting SMCM.MCMC model
 
-```{r}
-out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar.smcm,
+```{r eval=FALSE, include=FALSE}
+out.smcm.mcmc = fit.MCMC.SMCM( data = dat1, hyperpar = priorPar.smcm,
                                 nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                 standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+
+```
+
+```{r echo=FALSE}
+out.smcm.mcmc <- readRDS(system.file("extdata", "out.smcm.mcmc.rds", package = "BayesSMCM"))
+```
+
+```{r}
 print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
 ```
 
 #### Fitting SMCFM.MCMC model
 
-```{r}
-out.smcfm.mcmc = fit.MCMC.SMCFM ( data = dat1, hyperpar = priorPar.smcfm, 
+```{r eval=FALSE, include=FALSE}
+out.smcfm.mcmc = fit.MCMC.SMCFM( data = dat1, hyperpar = priorPar.smcfm, 
                                   nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                   standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
+```
+
+```{r}
+out.smcfm.mcmc <- readRDS(system.file("extdata", "out.smcfm.mcmc.rds", package = "BayesSMCM"))
+```
+
+
+```{r}
 print_smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
 ```
 
@@ -202,12 +218,15 @@ priorPar.smcfm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, 
 
 When $J=1$ case, `probs = 0` is selected.
 
-```{r message=FALSE, warning=FALSE, include=FALSE}
+```{r eval=FALSE, include=FALSE}
 out.smcm.mcmc.E1690 = fit.MCMC.SMCM ( data = real.data.RFS, hyperpar = priorPar.smcm,
                                       nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                       standardize = FALSE, probs = 0, save_loglik = 1, seed =  165251)
 ```
 
+```{r echo=FALSE}
+out.smcm.mcmc.E1690 <- readRDS(system.file("extdata", "out.smcm.mcmc.E1690.rds", package = "BayesSMCM"))
+```
 
 ```{r}
 print_smcm( out.smcm.mcmc.E1690, stan.model = FALSE, frailty = FALSE )
