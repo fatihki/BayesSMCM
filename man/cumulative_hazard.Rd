@@ -7,11 +7,11 @@
 cumulative_hazard(t, interval_bounds, lambda)
 }
 \arguments{
+\item{t}{A vector of times to event.}
+
 \item{interval_bounds}{Interval boundaries for the hazard distribution of piecewise exponential.}
 
 \item{lambda}{Baseline hazard parameters of the piecewise exponential distribution.}
-
-\item{\code{t}}{A vector of times to event.}
 }
 \value{
 A list with \code{h0} (hazard function values) and \code{H0} (cumulative hazard function values).

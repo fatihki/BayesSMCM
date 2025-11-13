@@ -16,4 +16,4 @@ LazyData: true
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports: rstan, coda, loo, bayesplot, ggplot2, parallel, doParallel, foreach, mvnfast, SuppDists, LearnBayes
-Suggests: knitr, rmarkdown, survival, survminer, remotes, ggnewscale
+Suggests: knitr, rmarkdown, survival, survminer, remotes, ggnewscale, dplyr

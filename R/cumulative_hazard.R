@@ -5,8 +5,8 @@
 
 #' @name cumulative_hazard
 #' 
-#' @param \code{t} A vector of times to event.
-#' @param interval_bounds  Interval boundaries for the hazard distribution of piecewise exponential.
+#' @param t A vector of times to event.
+#' @param interval_bounds Interval boundaries for the hazard distribution of piecewise exponential.
 #' @param lambda Baseline hazard parameters of the piecewise exponential distribution.
 #' 
 #' @return A list with \code{h0} (hazard function values) and \code{H0} (cumulative hazard function values).
