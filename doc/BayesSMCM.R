@@ -37,7 +37,7 @@ priorPar.smcfm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, 
 #                                 standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 # 
 
-## ----echo=FALSE---------------------------------------------------------------
+## -----------------------------------------------------------------------------
 out.smcm.mcmc <- readRDS(system.file("extdata", "out.smcm.mcmc.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------

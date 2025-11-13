@@ -22,7 +22,7 @@ This vignette demonstrates how to use the `BayesSMCM` package to simulate data a
 
 ## Installation
 
-Install the latest development version from [GitHub](https://github.com/fatihki/BayesSMCM)
+Install the latest development version from [GitHub](https://github.com/fatihki/BayesSMCM).
 
 ```{r message=FALSE, warning=FALSE}
 # install.packages("remotes")
@@ -82,11 +82,11 @@ out.smcm.mcmc = fit.MCMC.SMCM( data = dat1, hyperpar = priorPar.smcm,
 
 ```
 
-```{r echo=FALSE}
+```{r }
 out.smcm.mcmc <- readRDS(system.file("extdata", "out.smcm.mcmc.rds", package = "BayesSMCM"))
 ```
 
-```{r}
+```{r }
 print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
 ```
 
@@ -98,12 +98,12 @@ out.smcfm.mcmc = fit.MCMC.SMCFM( data = dat1, hyperpar = priorPar.smcfm,
                                   standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 ```
 
-```{r}
+```{r }
 out.smcfm.mcmc <- readRDS(system.file("extdata", "out.smcfm.mcmc.rds", package = "BayesSMCM"))
 ```
 
 
-```{r}
+```{r }
 print_smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
 ```
 

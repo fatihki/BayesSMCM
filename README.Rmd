@@ -1,34 +1,41 @@
 ---
-title: "BayesSMCM Tutorial"
-output: rmarkdown::html_vignette
-vignette: >
-  %\VignetteIndexEntry{BayesSMCM Tutorial}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+output: github_document
 ---
 
-```{r setup, include=FALSE}
+<!-- README.md is generated from README.Rmd. Please edit that file -->
+
+```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>"
+  comment = "#>",
+  fig.path = "man/figures/README-",
+  out.width = "100%"
 )
 ```
 
-This is an R package **BayesSMCM** implementing Bayesian hierarchical modeling for the semiparametric mixture cure model (SMCM), which accommodates both the inclusion and exclusion of a frailty component  [Kızılaslan F and Vitelli V, 2025](https://arxiv.org/???).
+# BayesSMCM
 
-## Introduction
+```{=html}
+<!-- badges: start --
 
-This vignette demonstrates how to use the `BayesSMCM` package to simulate data and fit a hierarchical semiparametric mixture cure (SMC) and semiparametric mixture cure frailty (SMCF) models.
+[![R-CMD-check](https://github.com/fatihki/BayesSMCM)](https://github.com/fatihki/BayesSMCM/actions)
+[![CRAN](http://www.r-pkg.org/badges/version/BayesSMCM)](https://cran.r-project.org/package=BayesSMCM)
+
+-- badges: end -->
+```
+
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](https://opensource.org/licenses/MIT)
+
+This is an R package **BayesSMCM** implementing Bayesian hierarchical modeling for the semiparametric mixture cure model (SMCM), which accommodates both the inclusion and exclusion of a frailty component [Kızılaslan F and Vitelli V, 2025](https://arxiv.org/???).
 
 ## Installation
 
-Install the latest development version from [GitHub](https://github.com/fatihki/BayesSMCM).
+Install the latest development version from [GitHub](https://github.com/fatihki/BayesSMCM)
 
-```{r message=FALSE, warning=FALSE}
-# install.packages("remotes")
-# remotes::install_github("fatihki/BayesSMCM")
+```{r include=FALSE}
+#install.packages("remotes")
+remotes::install_github("fatihki/BayesSMCM")
 ```
-
 
 ```{r}
 library(BayesSMCM)
@@ -37,12 +44,11 @@ library(BayesSMCM)
 ## A simulation study
 
 We present an example of the proposed models in [Kızılaslan and Vitelli, 2025]. A dataset is generated as Scenario 1 given in [Kızılaslan and Vitelli, 2025].
-In Scenario $1$, we assume an exponential distribution for the baseline survival function with $\lambda=1$, i.e. $J=1$. 
-Two covariates, $\mathbf{Z_1}$ and $\mathbf{Z_2}$ are independently generated respectively from a Bernoulli distribution with probability $0.5$, i.e. Bernoulli$(0.5),$ and from a standard normal distribution, i.e. $\mathcal{N}(0,1)$. The covariates $\mathbf{X}$ and $\mathbf{Z}$ are assumed to be the same.
+In Scenario $1$, we assume an exponential distribution for the baseline survival function with $\lambda=1$, i.e. $ J=1 $. 
+Two covariates, $\mathbf{Z_1}$ and $\mathbf{Z_2}$ are independently generated respectively from a Bernoulli distribution with probability $0.5$, i.e. Bernoulli $(0.5)$, and from a standard normal distribution, i.e. $ N(0,1) $. The covariates $\mathbf{X}$ and $\mathbf{Z}$ are assumed to be the same.
 The true regression coefficients are set as $(b_0, b_1, b_2) = (0.4, 0.5, 1)$ and $(\beta_1, \beta_2) = (1, 0.2)$. Following the specified parameter settings, the survival data is generated using SMCM. We set the number of observations to $n = 300$.
 
 ```{r}
-# simulate data
 n <- 300
 b.true <- c( 0.4, 0.5, 0.1)
 beta.true <- c(1, 0.2 )
@@ -50,15 +56,14 @@ baseline.hazard.rates <- 1
 intervals <- c(0, 16)
 prob.cov.X <- c(0.5)
 prob.cov.Z <- c(0.5)
-dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
-str(dat1)
+dat1 <- simSMCM(n, b.true, beta.true, baseline.hazard.rates, intervals, seed = 2026, 
+                cens.start = 30/365, cens.end = 32,  prob.cov.X, prob.cov.Z, same.cov = TRUE )
 ```
 
 For the simulated `dat1`, we run three chains with $7500$ iterations for all methods in the simulation. After
 discarding the first $2500$ iterations as burn-in, and applying a thinning of size $10$ to each chain, we retain $500$
 iterations per chain, resulting in a total of $1500$ samples for posterior inference. For monitoring the convergence
 of the posterior samples, the estimated potential scale reduction factor (Gelman and Rubin), Rhat, for all unknown parameters are evaluated.
-
 
 ```{r}
 # Bayesian settings:
@@ -75,35 +80,25 @@ Here, we only consider the case of $J = 1$, in which probs is defined as `probs 
 
 #### Fitting SMCM.MCMC model
 
-```{r eval=FALSE, include=FALSE}
-out.smcm.mcmc = fit.MCMC.SMCM( data = dat1, hyperpar = priorPar.smcm,
+```{r}
+out.smcm.mcmc = fit.MCMC.SMCM( data = dat1, hyperpar = priorPar.smcm, 
                                 nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                 standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
-
 ```
 
-```{r }
-out.smcm.mcmc <- readRDS(system.file("extdata", "out.smcm.mcmc.rds", package = "BayesSMCM"))
-```
-
-```{r }
+```{r}
 print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
 ```
 
 #### Fitting SMCFM.MCMC model
 
-```{r eval=FALSE, include=FALSE}
+```{r}
 out.smcfm.mcmc = fit.MCMC.SMCFM( data = dat1, hyperpar = priorPar.smcfm, 
                                   nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                   standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 ```
 
-```{r }
-out.smcfm.mcmc <- readRDS(system.file("extdata", "out.smcfm.mcmc.rds", package = "BayesSMCM"))
-```
-
-
-```{r }
+```{r}
 print_smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
 ```
 
@@ -118,7 +113,7 @@ priorPar.smcm.rstan = list( sigma_beta = 1000, sigma_b = 1000, a = 0.1, b = 0.1)
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.smcm.rstan = fit.SMCM.RStan(data = dat1, hyperpar = priorPar.smcm.rstan,
+out.smcm.rstan = fit.SMCM.RStan(data = dat1, hyperpar = priorPar.smcm.rstan, 
                                 nchains, nIter, warmup, thin, standardize = FALSE,
                                 probs = 0, save_loglik = 1, seed = 2025  )
 ```
@@ -136,7 +131,7 @@ priorPar.smcfm.rstan = list( sigma_beta = 1000, sigma_b = 1000,a = 0.1, b = 0.1,
 ```
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.smcfm.rstan =  fit.SMCFM.RStan(data = dat1, hyperpar =  priorPar.smcfm.rstan,
+out.smcfm.rstan =  fit.SMCFM.RStan(data = dat1, hyperpar = priorPar.smcfm.rstan,
                                    nchains, nIter, warmup, thin, standardize = FALSE,
                                    probs = 0, save_loglik = 1, seed = 2025  )
 ```
@@ -149,7 +144,7 @@ print_smcm( out.smcfm.rstan, stan.model = TRUE, frailty = TRUE)
 #### Fitting HSMCM.Rstan model
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
-out.hsmcm.rstan = fit.HSMCM.RStan(data = dat1, hyperpar = priorPar.smcm,
+out.hsmcm.rstan = fit.HSMCM.RStan(data = dat1, hyperpar =  priorPar.smcm,
                                   nchains, nIter, warmup, thin, standardize = FALSE,
                                   probs = 0, save_loglik = 1, seed = 2025  )
 ```
@@ -183,9 +178,7 @@ Among patients who did not experience relapse, both the median and mean follow-u
 The following figures display Kaplan–Meier (KM) estimates of the survival curves overall and stratified by treatment group (high-dose IFN vs. observation). A clear plateau at approximately four years suggests the presence of long-term survivors, motivating the use of a cure rate model for this dataset.
 
 We here apply only two proposed mixture cure model approaches- SMCM (MCMC) and HSMCM (RStan)- to the E1690 dataset.
-As an example we set $J = 1$ for the semiparametric structure. 
-For each method, we run five MCMC chains of $7500$ iterations, discarding the first $2500$ as warm-up and applying a thinning by $10$, resulting in $2500$ posterior samples in total. See more details and full analysis in [Kızılaslan and Vitelli, 2025].
-
+As an example we set $J = 1$ for the semiparametric structure. For each method, we run five MCMC chains of $7500$ iterations, discarding the first $2500$ as warm-up and applying a thinning by $10$, resulting in $2500$ posterior samples in total. See more details and full analysis in [Kızılaslan and Vitelli, 2025].
 
 ```{r}
 data.E1690 = E1690
@@ -207,26 +200,24 @@ real.data.RFS$delta         = data.E1690.RFS$rfscens
 
 ```{r}
 # Bayesian settings:
-nchains = 3; nIter  = 7500;  warmup = 2500; thin = 10
+nchains = 3; nIter   = 7500;   warmup = 2500; thin = 10
 # priors for SMCMs
 priorPar.smcm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, b = 0.1 )
 # priors for SMCFMs
 priorPar.smcfm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, b = 0.1, c = 0.1, d = 0.1 )
 ```
 
+
 ### Fitting SMCM.MCMC model
 
 When $J=1$ case, `probs = 0` is selected.
 
-```{r eval=FALSE, include=FALSE}
+```{r message=FALSE, warning=FALSE, include=FALSE}
 out.smcm.mcmc.E1690 = fit.MCMC.SMCM ( data = real.data.RFS, hyperpar = priorPar.smcm,
                                       nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                       standardize = FALSE, probs = 0, save_loglik = 1, seed =  165251)
 ```
 
-```{r echo=FALSE}
-out.smcm.mcmc.E1690 <- readRDS(system.file("extdata", "out.smcm.mcmc.E1690.rds", package = "BayesSMCM"))
-```
 
 ```{r}
 print_smcm( out.smcm.mcmc.E1690, stan.model = FALSE, frailty = FALSE )
@@ -301,8 +292,7 @@ Z           <- scale.dummy.matrix(real.data.RFS$Z)
 
 for (s in 1:S) {
   # Compute cumulative hazard and hazard of each tgrid[i]
-  H0_h0           <- cumulative_hazard(tgrid, interval_bounds = out.smcm.mcmc.E1690$priors$s,
-                                                  lambda = lambda_mcmc_matrix[s] ) 
+  H0_h0           <- cumulative_hazard(tgrid, interval_bounds = out.smcm.mcmc.E1690$priors$s, lambda = lambda_mcmc_matrix[s] ) 
   H0              <- H0_h0$H0 
   h0              <- H0_h0$h0 
   Zb              <- Z %*% b_mcmc_matrix[s,] 
@@ -357,7 +347,6 @@ real.data1.KM.model.plot <- ggplot() +
   theme_classic(base_size = 14) 
 real.data1.KM.model.plot
 ```
-
 
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
@@ -460,6 +449,7 @@ real.data1.KM.model.trt.plot <- ggplot() +
 real.data1.KM.model.trt.plot
 ```
 
+
 ## References
 
  Ibrahim, J. G., Chen, M. H., Chu, H. (2012). Bayesian methods in clinical trials: a Bayesian analysis of ECOG trials E1684 and E1690. BMC Medical Research Methodology, 12(1), 183.
@@ -467,4 +457,3 @@ real.data1.KM.model.trt.plot
  Kirkwood, J. M., Ibrahim, J. G., Sondak, V. K., Richards, J., Flaherty, L. E., Ernstoff, M. S., Smith, T. J., Rao, U., Steele, M., Blum, R. H. (2000). High- and low-dose interferon alfa-2b in high-risk melanoma: First analysis of intergroup trial E1690/S9111/C9190. Journal of Clinical Oncology, 18(12), 2444–2458.
  
  Kızılaslan, F., Vitelli, V. (2025). Bayesian Semiparametric Mixture Cure (Frailty) Model. [arXiv:???](https://arxiv.org/???)
-
