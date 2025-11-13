@@ -37,7 +37,7 @@ priorPar.smcfm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, 
 #                                 standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 # 
 
-## -----------------------------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 out.smcm.mcmc <- readRDS(system.file("extdata", "out.smcm.mcmc.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
@@ -48,7 +48,7 @@ print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
 #                                   nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
 #                                   standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 
-## -----------------------------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 out.smcfm.mcmc <- readRDS(system.file("extdata", "out.smcfm.mcmc.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
@@ -57,10 +57,13 @@ print_smcm( out.smcfm.mcmc, stan.model = FALSE, frailty = TRUE )
 ## -----------------------------------------------------------------------------
 priorPar.smcm.rstan = list( sigma_beta = 1000, sigma_b = 1000, a = 0.1, b = 0.1)
 
-## ----message=FALSE, warning=FALSE, include=FALSE------------------------------
-out.smcm.rstan = fit.SMCM.RStan(data = dat1, hyperpar = priorPar.smcm.rstan,
-                                nchains, nIter, warmup, thin, standardize = FALSE,
-                                probs = 0, save_loglik = 1, seed = 2025  )
+## ----eval=FALSE, include=FALSE------------------------------------------------
+# out.smcm.rstan = fit.SMCM.RStan(data = dat1, hyperpar = priorPar.smcm.rstan,
+#                                 nchains, nIter, warmup, thin, standardize = FALSE,
+#                                 probs = 0, save_loglik = 1, seed = 2025  )
+
+## ----include=FALSE------------------------------------------------------------
+out.smcm.rstan <- readRDS(system.file("extdata", "out.smcm.rstan.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
 print_smcm( out.smcm.rstan, stan.model = TRUE, frailty = FALSE)
@@ -68,26 +71,35 @@ print_smcm( out.smcm.rstan, stan.model = TRUE, frailty = FALSE)
 ## -----------------------------------------------------------------------------
 priorPar.smcfm.rstan = list( sigma_beta = 1000, sigma_b = 1000,a = 0.1, b = 0.1,  c = 0.1, d = 0.1 )
 
-## ----message=FALSE, warning=FALSE, include=FALSE------------------------------
-out.smcfm.rstan =  fit.SMCFM.RStan(data = dat1, hyperpar =  priorPar.smcfm.rstan,
-                                   nchains, nIter, warmup, thin, standardize = FALSE,
-                                   probs = 0, save_loglik = 1, seed = 2025  )
+## ----eval=FALSE, include=FALSE------------------------------------------------
+# out.smcfm.rstan =  fit.SMCFM.RStan(data = dat1, hyperpar =  priorPar.smcfm.rstan,
+#                                    nchains, nIter, warmup, thin, standardize = FALSE,
+#                                    probs = 0, save_loglik = 1, seed = 2025  )
+
+## ----include=FALSE------------------------------------------------------------
+out.smcfm.rstan <- readRDS(system.file("extdata", "out.smcfm.rstan.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
 print_smcm( out.smcfm.rstan, stan.model = TRUE, frailty = TRUE)
 
-## ----message=FALSE, warning=FALSE, include=FALSE------------------------------
-out.hsmcm.rstan = fit.HSMCM.RStan(data = dat1, hyperpar = priorPar.smcm,
-                                  nchains, nIter, warmup, thin, standardize = FALSE,
-                                  probs = 0, save_loglik = 1, seed = 2025  )
+## ----eval=FALSE, include=FALSE------------------------------------------------
+# out.hsmcm.rstan = fit.HSMCM.RStan(data = dat1, hyperpar = priorPar.smcm,
+#                                   nchains, nIter, warmup, thin, standardize = FALSE,
+#                                   probs = 0, save_loglik = 1, seed = 2025  )
+
+## ----include=FALSE------------------------------------------------------------
+out.hsmcm.rstan <- readRDS(system.file("extdata", "out.hsmcm.rstan.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
 print_smcm( out.hsmcm.rstan, stan.model = TRUE, frailty = FALSE)
 
-## ----message=FALSE, warning=FALSE, include=FALSE------------------------------
-out.hsmcfm.rstan = fit.HSMCFM.RStan(data = dat1, hyperpar = priorPar.smcfm,
-                                    nchains, nIter, warmup, thin, standardize = FALSE,
-                                    probs = 0, save_loglik = 1, seed = 2025  )
+## ----eval=FALSE, include=FALSE------------------------------------------------
+# out.hsmcfm.rstan = fit.HSMCFM.RStan(data = dat1, hyperpar = priorPar.smcfm,
+#                                     nchains, nIter, warmup, thin, standardize = FALSE,
+#                                     probs = 0, save_loglik = 1, seed = 2025  )
+
+## ----include=FALSE------------------------------------------------------------
+out.hsmcfm.rstan <- readRDS(system.file("extdata", "out.hsmcfm.rstan.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
 print_smcm( out.hsmcfm.rstan, stan.model = TRUE, frailty = TRUE)
@@ -121,16 +133,19 @@ priorPar.smcfm = list( r1 = 1, delta1 = 1e-04, r2 = 1, delta2 = 1e-04, a = 0.1, 
 #                                       nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
 #                                       standardize = FALSE, probs = 0, save_loglik = 1, seed =  165251)
 
-## ----echo=FALSE---------------------------------------------------------------
+## ----include=FALSE------------------------------------------------------------
 out.smcm.mcmc.E1690 <- readRDS(system.file("extdata", "out.smcm.mcmc.E1690.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
 print_smcm( out.smcm.mcmc.E1690, stan.model = FALSE, frailty = FALSE )
 
-## ----message=FALSE, warning=FALSE, include=FALSE------------------------------
-out.hsmcm.rstan.E1690 = fit.HSMCM.RStan(data = real.data.RFS, hyperpar = priorPar.smcm,
-                                        nchains, nIter, warmup, thin, standardize = FALSE,
-                                        probs = 0, save_loglik = 1, seed = 165251  )
+## ----eval=FALSE, include=FALSE------------------------------------------------
+# out.hsmcm.rstan.E1690 = fit.HSMCM.RStan(data = real.data.RFS, hyperpar = priorPar.smcm,
+#                                         nchains, nIter, warmup, thin, standardize = FALSE,
+#                                         probs = 0, save_loglik = 1, seed = 165251  )
+
+## ----include=FALSE------------------------------------------------------------
+out.hsmcm.rstan.E1690 <- readRDS(system.file("extdata", "out.hsmcm.rstan.E1690.rds", package = "BayesSMCM"))
 
 ## -----------------------------------------------------------------------------
 print_smcm( out.hsmcm.rstan.E1690, stan.model = TRUE, frailty = FALSE )

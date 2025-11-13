@@ -2,12 +2,12 @@ Package: BayesSMCM
 Type: Package
 Title: Bayesian Semiparametric Mixture Cure (Frailty) Model
 Version: 0.1.0
-Description: Bayesian Semiparametric Mixture Cure Model (SMCM) with both the inclusion and exclusion of a frailty component using Metropolis-Hasting algorithm and Stan.
+Description: Bayesian Semiparametric Mixture Cure Model (SMCM) with both the inclusion and exclusion of a frailty component using MCMC algorithm and Stan.
 Authors@R: c(person("Fatih", "Kızılaslan", role=c("aut","cre"), email = "fkizilaslan@yahoo.com"))
 Maintainer: Fatih Kızılaslan <fkizilaslan@yahoo.com> 
-Copyright: ??
+Copyright: 2025 Fatih Kızılaslan
 URL: https://github.com/fatihki/BayesSMCM
-BugReports: https://github.com/fatihki/BayesSMCM`/issues
+BugReports: https://github.com/fatihki/BayesSMCM/issues
 License: GPL-3
 VignetteBuilder: knitr
 Depends: R (>= 4.1.0)
