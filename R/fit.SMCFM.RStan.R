@@ -18,7 +18,9 @@
 #' @param warmup Number of warmup iterations.
 #' @param thin Thinning interval for MCMC samples.
 #' @param standardize Logical indicating whether to standardize covariates.
-#' @param probs Vector of quantiles to define the cut points for the piecewise exponential baseline hazard function.
+#' @param probs A numeric vector of quantiles used to define the cut points of the piecewise exponential baseline hazard function. 
+#' For example, use \code{probs = 0} when \eqn{J = 1}, \code{probs = 0.5} or any other quantile value when \eqn{J = 2}, 
+#' and a vector such as \code{probs = c(0.35, 0.70)} when \eqn{J = 3}.
 #' @param save_loglik Integer indicating whether to save log-likelihood values (0 = FALSE, 1 = TRUE).
 #' @param seed Random seed for reproducibility.
 #' 
