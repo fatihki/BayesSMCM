@@ -38,7 +38,7 @@ library(BayesSMCM)
 
 We present an example of the proposed models in [Kızılaslan and Vitelli, 2025]. A dataset is generated as Scenario 1 given in [Kızılaslan and Vitelli, 2025].
 In Scenario $1$, we assume an exponential distribution for the baseline survival function with $\lambda=1$, i.e. $J=1$. 
-Two covariates, $\bm Z_1$ and $\bm Z_2,$ are independently generated respectively from a Bernoulli distribution with probability $0.5$, i.e. Bernoulli$(0.5),$ and from a standard normal distribution, i.e. $\mathcal{N}(0,1)$. The covariates $\bm X$ and $\bm Z$ are assumed to be the same.
+Two covariates, $\mathbf{Z_1}$ and $\mathbf{Z_2}$ are independently generated respectively from a Bernoulli distribution with probability $0.5$, i.e. Bernoulli$(0.5),$ and from a standard normal distribution, i.e. $\mathcal{N}(0,1)$. The covariates $\mathbf{X}$ and $\mathbf{Z}$ are assumed to be the same.
 The true regression coefficients are set as $(b_0, b_1, b_2) = (0.4, 0.5, 1)$ and $(\beta_1, \beta_2) = (1, 0.2)$. Following the specified parameter settings, the survival data is generated using SMCM. We set the number of observations to $n = 300$.
 
 ```{r}

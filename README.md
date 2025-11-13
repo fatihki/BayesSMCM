@@ -30,12 +30,12 @@ We present an example of the proposed models in \[Kızılaslan and
 Vitelli, 2025\]. A dataset is generated as Scenario 1 given in
 \[Kızılaslan and Vitelli, 2025\]. In Scenario $1$, we assume an
 exponential distribution for the baseline survival function with
-$\lambda=1$, i.e. $J=1$. Two covariates, $\bm Z_1$ and $\bm Z_2,$ are
-independently generated respectively from a Bernoulli distribution with
-probability $0.5$, i.e. Bernoulli$(0.5),$ and from a standard normal
-distribution, i.e. $\mathcal{N}(0,1)$. The covariates $\bm X$ and
-$\bm Z$ are assumed to be the same. The true regression coefficients are
-set as $(b_0, b_1, b_2) = (0.4, 0.5, 1)$ and
+$\lambda=1$, i.e. $J=1$. Two covariates, $\mathbf{Z_1}$ and
+$\mathbf{Z_2}$ are independently generated respectively from a Bernoulli
+distribution with probability $0.5$, i.e. Bernoulli$(0.5),$ and from a
+standard normal distribution, i.e. $N(0,1)$. The covariates $\mathbf{X}$
+and $\mathbf{Z}$ are assumed to be the same. The true regression
+coefficients are set as $(b_0, b_1, b_2) = (0.4, 0.5, 1)$ and
 $(\beta_1, \beta_2) = (1, 0.2)$. Following the specified parameter
 settings, the survival data is generated using SMCM. We set the number
 of observations to $n = 300$.
@@ -80,7 +80,8 @@ Moreover, for $J = 3$, you can define a vector such as
 #### Fitting SMCM.MCMC model
 
 ``` r
-out.smcm.mcmc = fit.MCMC.SMCM ( data = dat1, hyperpar = priorPar.smcm, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
+out.smcm.mcmc = fit.MCMC.SMCM( data = dat1, hyperpar = priorPar.smcm, 
+                                nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                 standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 ```
 
@@ -101,7 +102,8 @@ print_smcm( out.smcm.mcmc, stan.model = FALSE, frailty = FALSE )
 #### Fitting SMCFM.MCMC model
 
 ``` r
-out.smcfm.mcmc = fit.MCMC.SMCFM ( data = dat1, hyperpar = priorPar.smcfm, nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
+out.smcfm.mcmc = fit.MCMC.SMCFM( data = dat1, hyperpar = priorPar.smcfm, 
+                                  nchains, nIter, warmup, thin, mcmc.parallel = "parLapply",
                                   standardize = FALSE, probs = 0, save_loglik = 1, seed = 2025 )
 ```
 
@@ -221,11 +223,11 @@ $156$ female = 1). For the incidence part of the model, we use the same
 covariates in addition to the intercept, i.e.,
 $\mathbf{z} = [\mathbf{1}, \mathbf{x}]$. Among patients who did not
 experience relapse, both the median and mean follow-up times exceeded
-four years. Figure @ref(fig:plot1) displays Kaplan–Meier (KM) estimates
-of the survival curves overall and stratified by treatment group
-(high-dose IFN vs. observation). A clear plateau at approximately four
-years suggests the presence of long-term survivors, motivating the use
-of a cure rate model for this dataset.
+four years. The following figures display Kaplan–Meier (KM) estimates of
+the survival curves overall and stratified by treatment group (high-dose
+IFN vs. observation). A clear plateau at approximately four years
+suggests the presence of long-term survivors, motivating the use of a
+cure rate model for this dataset.
 
 We here apply only two proposed mixture cure model approaches- SMCM
 (MCMC) and HSMCM (RStan)- to the E1690 dataset. As an example we set

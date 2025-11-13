@@ -364,14 +364,13 @@ cure (SMC) and semiparametric mixture cure frailty (SMCF) models.</p>
 <p>We present an example of the proposed models in [Kızılaslan and
 Vitelli, 2025]. A dataset is generated as Scenario 1 given in
 [Kızılaslan and Vitelli, 2025]. In Scenario <span class="math inline">\(1\)</span>, we assume an exponential distribution
-for the baseline survival function with <span class="math inline">\(\lambda=1\)</span>, i.e. <span class="math inline">\(J=1\)</span>. Two covariates, <span class="math inline">\(\bm Z_1\)</span> and <span class="math inline">\(\bm Z_2,\)</span> are independently generated
+for the baseline survival function with <span class="math inline">\(\lambda=1\)</span>, i.e. <span class="math inline">\(J=1\)</span>. Two covariates, <span class="math inline">\(\mathbf{Z_1}\)</span> and <span class="math inline">\(\mathbf{Z_2}\)</span> are independently generated
 respectively from a Bernoulli distribution with probability <span class="math inline">\(0.5\)</span>, i.e. Bernoulli<span class="math inline">\((0.5),\)</span> and from a standard normal
-distribution, i.e. <span class="math inline">\(\mathcal{N}(0,1)\)</span>. The covariates <span class="math inline">\(\bm X\)</span> and <span class="math inline">\(\bm
-Z\)</span> are assumed to be the same. The true regression coefficients
-are set as <span class="math inline">\((b_0, b_1, b_2) = (0.4, 0.5,
-1)\)</span> and <span class="math inline">\((\beta_1, \beta_2) = (1,
-0.2)\)</span>. Following the specified parameter settings, the survival
-data is generated using SMCM. We set the number of observations to <span class="math inline">\(n = 300\)</span>.</p>
+distribution, i.e. <span class="math inline">\(\mathcal{N}(0,1)\)</span>. The covariates <span class="math inline">\(\mathbf{X}\)</span> and <span class="math inline">\(\mathbf{Z}\)</span> are assumed to be the same.
+The true regression coefficients are set as <span class="math inline">\((b_0, b_1, b_2) = (0.4, 0.5, 1)\)</span> and <span class="math inline">\((\beta_1, \beta_2) = (1, 0.2)\)</span>. Following
+the specified parameter settings, the survival data is generated using
+SMCM. We set the number of observations to <span class="math inline">\(n
+= 300\)</span>.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a><span class="co"># simulate data</span></span>
 <span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">300</span></span>
 <span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>b.true <span class="ot">&lt;-</span> <span class="fu">c</span>( <span class="fl">0.4</span>, <span class="fl">0.5</span>, <span class="fl">0.1</span>)</span>
