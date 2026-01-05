@@ -13,7 +13,7 @@
 This is an R package **BayesSMCM** implementing Bayesian hierarchical
 modeling for the semiparametric mixture cure model (SMCM), which
 accommodates both the inclusion and exclusion of a frailty component
-[Kızılaslan F and Vitelli V, 2025](https://arxiv.org/???).
+[Kızılaslan F and Vitelli V, 2025](https://arxiv.org/abs/2512.08173).
 
 ## Installation
 
@@ -32,7 +32,7 @@ Vitelli, 2025\]. A dataset is generated as Scenario 1 given in
 exponential distribution for the baseline survival function with
 $\lambda=1$, i.e. $J=1$. Two covariates, $\mathbf{Z_1}$ and
 $\mathbf{Z_2}$ are independently generated respectively from a Bernoulli
-distribution with probability $0.5$, i.e. Bernoulli$(0.5),$ and from a
+distribution with probability $0.5$, i.e. Bernoulli $(0.5)$, and from a
 standard normal distribution, i.e. $N(0,1)$. The covariates $\mathbf{X}$
 and $\mathbf{Z}$ are assumed to be the same. The true regression
 coefficients are set as $(b_0, b_1, b_2) = (0.4, 0.5, 1)$ and
@@ -218,7 +218,7 @@ application comprises: $t:$ observed RFS in years (mean $2.31$ years);
 $\delta:$ censoring indicator ($177$ right-censored observations);
 $x_1:$ treatment group ($212$ patients in the high-dose IFN arm = 1,
 $205$ in the observation arm = 0); $x_2:$ age (continuous, range
-$19.13$–$78.05$, mean $48.05$ years); and $x_3:$ sex ($261$ male = 0,
+$19.13–78.05$, mean $48.05$ years); and $x_3:$ sex ($261$ male = 0,
 $156$ female = 1). For the incidence part of the model, we use the same
 covariates in addition to the intercept, i.e.,
 $\mathbf{z} = [\mathbf{1}, \mathbf{x}]$. Among patients who did not
@@ -430,4 +430,4 @@ First analysis of intergroup trial E1690/S9111/C9190. Journal of
 Clinical Oncology, 18(12), 2444–2458.
 
 Kızılaslan, F., Vitelli, V. (2025). Bayesian Semiparametric Mixture Cure
-(Frailty) Model. [arXiv:???](https://arxiv.org/???)
+(Frailty) Model. <https://arxiv.org/abs/2512.08173>.

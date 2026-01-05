@@ -647,8 +647,8 @@ Object.defineProperty(e,"__esModule",{value:!0}),e.mhchemParser=void 0;var r=fun
 <p>This is an R package <strong>BayesSMCM</strong> implementing Bayesian
 hierarchical modeling for the semiparametric mixture cure model (SMCM),
 which accommodates both the inclusion and exclusion of a frailty
-component <a href="https://arxiv.org/???">Kızılaslan F and Vitelli V,
-2025</a>.</p>
+component <a href="https://arxiv.org/abs/2512.08173">Kızılaslan F and
+Vitelli V, 2025</a>.</p>
 <h2 id="installation">Installation</h2>
 <p>Install the latest development version from <a href="https://github.com/fatihki/BayesSMCM">GitHub</a></p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(BayesSMCM)</span></code></pre></div>
@@ -657,7 +657,7 @@ component <a href="https://arxiv.org/???">Kızılaslan F and Vitelli V,
 Vitelli, 2025]. A dataset is generated as Scenario 1 given in
 [Kızılaslan and Vitelli, 2025]. In Scenario <span class="math inline">\(1\)</span>, we assume an exponential distribution
 for the baseline survival function with <span class="math inline">\(\lambda=1\)</span>, i.e. <span class="math inline">\(J=1\)</span>. Two covariates, <span class="math inline">\(\mathbf{Z_1}\)</span> and <span class="math inline">\(\mathbf{Z_2}\)</span> are independently generated
-respectively from a Bernoulli distribution with probability <span class="math inline">\(0.5\)</span>, i.e. Bernoulli<span class="math inline">\((0.5),\)</span> and from a standard normal
+respectively from a Bernoulli distribution with probability <span class="math inline">\(0.5\)</span>, i.e. Bernoulli <span class="math inline">\((0.5)\)</span>, and from a standard normal
 distribution, i.e. <span class="math inline">\(N(0,1)\)</span>. The
 covariates <span class="math inline">\(\mathbf{X}\)</span> and <span class="math inline">\(\mathbf{Z}\)</span> are assumed to be the same.
 The true regression coefficients are set as <span class="math inline">\((b_0, b_1, b_2) = (0.4, 0.5, 1)\)</span> and <span class="math inline">\((\beta_1, \beta_2) = (1, 0.2)\)</span>. Following
@@ -795,7 +795,7 @@ includes <span class="math inline">\(n=417\)</span> patients, with
 approximately <span class="math inline">\(42\%\)</span> censoring across
 the two treatment arms. The dataset in this application comprises: <span class="math inline">\(t:\)</span> observed RFS in years (mean <span class="math inline">\(2.31\)</span> years); <span class="math inline">\(\delta:\)</span> censoring indicator (<span class="math inline">\(177\)</span> right-censored observations); <span class="math inline">\(x_1:\)</span> treatment group (<span class="math inline">\(212\)</span> patients in the high-dose IFN arm =
 1, <span class="math inline">\(205\)</span> in the observation arm = 0);
-<span class="math inline">\(x_2:\)</span> age (continuous, range <span class="math inline">\(19.13\)</span>–<span class="math inline">\(78.05\)</span>, mean <span class="math inline">\(48.05\)</span> years); and <span class="math inline">\(x_3:\)</span> sex (<span class="math inline">\(261\)</span> male = 0, <span class="math inline">\(156\)</span> female = 1). For the incidence part
+<span class="math inline">\(x_2:\)</span> age (continuous, range <span class="math inline">\(19.13–78.05\)</span>, mean <span class="math inline">\(48.05\)</span> years); and <span class="math inline">\(x_3:\)</span> sex (<span class="math inline">\(261\)</span> male = 0, <span class="math inline">\(156\)</span> female = 1). For the incidence part
 of the model, we use the same covariates in addition to the intercept,
 i.e., <span class="math inline">\(\mathbf{z} = [\mathbf{1},
 \mathbf{x}]\)</span>. Among patients who did not experience relapse,
@@ -974,7 +974,7 @@ Blum, R. H. (2000). High- and low-dose interferon alfa-2b in high-risk
 melanoma: First analysis of intergroup trial E1690/S9111/C9190. Journal
 of Clinical Oncology, 18(12), 2444–2458.</p>
 <p>Kızılaslan, F., Vitelli, V. (2025). Bayesian Semiparametric Mixture
-Cure (Frailty) Model. <a href="https://arxiv.org/???">arXiv:???</a></p>
+Cure (Frailty) Model. <a href="https://arxiv.org/abs/2512.08173">https://arxiv.org/abs/2512.08173</a>.</p>
 
 </body>
 </html>
